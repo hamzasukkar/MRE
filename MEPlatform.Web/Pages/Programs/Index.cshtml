@@ -1,0 +1,220 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Programs.IndexModel
+@{
+    ViewData["Title"] = "Programs";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3"><i class="bi bi-folder me-2"></i>Programs</h1>
+    <div>
+        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor") || User.IsInRole("ProgramManager"))
+        {
+            <a href="@Url.Page("./Create")" class="btn btn-primary">
+                <i class="bi bi-plus"></i> Create Program
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Programs Grid -->
+<div class="row">
+    @foreach (var program in Model.Programs)
+    {
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">@program.Name</h5>
+                    <span class="badge @(program.Status switch 
+                    {
+                        "Active" => "bg-success",
+                        "Planning" => "bg-info",
+                        "On Hold" => "bg-warning text-dark",
+                        "Completed" => "bg-primary",
+                        "Cancelled" => "bg-danger",
+                        _ => "bg-secondary"
+                    })">@program.Status</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">@program.Description</p>
+                    
+                    <!-- Program Metrics -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h6 class="text-primary mb-0">@program.ProjectsCount</h6>
+                                <small class="text-muted">Projects</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h6 class="text-success mb-0">@program.CompletedProjects</h6>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-info mb-0">@program.ActiveProjects</h6>
+                            <small class="text-muted">Active</small>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    @if (program.OverallProgress.HasValue)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Overall Progress</small>
+                                <small class="fw-bold">@program.OverallProgress.Value.ToString("F1")%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar @(program.OverallProgress.Value >= 75 ? "bg-success" : program.OverallProgress.Value >= 50 ? "bg-warning" : "bg-danger")" 
+                                     role="progressbar" 
+                                     style="width: @program.OverallProgress.Value%">
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Program Details -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Budget:</small>
+                            <div class="fw-bold">@program.Budget?.ToString("C0") ?? "N/A"</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Timeline:</small>
+                            <div class="small">
+                                @program.StartDate.ToString("MMM yyyy") - 
+                                @program.EndDate.ToString("MMM yyyy")
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sectors and Regions -->
+                    @if (program.Sectors.Any())
+                    {
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Sectors:</small>
+                            @foreach (var sector in program.Sectors.Take(3))
+                            {
+                                <span class="badge bg-light text-dark me-1">@sector</span>
+                            }
+                            @if (program.Sectors.Count > 3)
+                            {
+                                <span class="small text-muted">+@(program.Sectors.Count - 3) more</span>
+                            }
+                        </div>
+                    }
+
+                    @if (program.Regions.Any())
+                    {
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Regions:</small>
+                            @foreach (var region in program.Regions.Take(3))
+                            {
+                                <span class="badge bg-outline-secondary me-1">@region</span>
+                            }
+                            @if (program.Regions.Count > 3)
+                            {
+                                <span class="small text-muted">+@(program.Regions.Count - 3) more</span>
+                            }
+                        </div>
+                    }
+
+                    <!-- Timeline Alert -->
+                    @if (program.EndDate < DateTime.Now && program.Status != "Completed")
+                    {
+                        <div class="alert alert-danger alert-sm">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <small>Program overdue by @((DateTime.Now - program.EndDate).Days) days</small>
+                        </div>
+                    }
+                    else if ((program.EndDate - DateTime.Now).TotalDays <= 30 && program.Status == "Active")
+                    {
+                        <div class="alert alert-warning alert-sm">
+                            <i class="bi bi-clock me-1"></i>
+                            <small>Due in @((program.EndDate - DateTime.Now).Days) days</small>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Page("./Details", new { id = program.Id })" 
+                           class="btn btn-outline-primary btn-sm flex-fill">
+                            <i class="bi bi-eye me-1"></i>Details
+                        </a>
+                        <a href="@Url.Page("/Monitoring/Projects", new { programId = program.Id })" 
+                           class="btn btn-outline-info btn-sm flex-fill">
+                            <i class="bi bi-kanban me-1"></i>Projects
+                        </a>
+                        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor") || User.IsInRole("ProgramManager"))
+                        {
+                            <a href="@Url.Page("./Edit", new { id = program.Id })" 
+                               class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Programs.Any())
+{
+    <div class="text-center py-5">
+        <i class="bi bi-folder" style="font-size: 4rem; color: #ccc;"></i>
+        <h4 class="mt-3 text-muted">No programs found</h4>
+        <p class="text-muted">Get started by creating your first program.</p>
+        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor") || User.IsInRole("ProgramManager"))
+        {
+            <a href="@Url.Page("./Create")" class="btn btn-primary mt-3">
+                <i class="bi bi-plus"></i> Create Your First Program
+            </a>
+        }
+    </div>
+}
+
+<!-- Program Statistics -->
+@if (Model.Programs.Any())
+{
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Program Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-primary">@Model.Programs.Count</h4>
+                                <small class="text-muted">Total Programs</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-success">@Model.Programs.Count(p => p.Status == "Active")</h4>
+                                <small class="text-muted">Active Programs</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-info">@Model.Programs.Sum(p => p.ProjectsCount)</h4>
+                                <small class="text-muted">Total Projects</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-warning">@Model.Programs.Sum(p => p.Budget ?? 0).ToString("C0")</h4>
+                                <small class="text-muted">Total Budget</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

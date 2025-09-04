@@ -1,0 +1,197 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Monitoring.ProjectsModel
+@{
+    ViewData["Title"] = "Project Monitoring";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3"><i class="bi bi-kanban me-2"></i>Project Monitoring</h1>
+    <div>
+        <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="frameworkFilter" class="form-label">Framework</label>
+                        <select id="frameworkFilter" name="frameworkId" class="form-select" asp-for="FrameworkId">
+                            <option value="">All Frameworks</option>
+                            <option value="1" selected="@(Model.FrameworkId == 1)">SNDV Framework</option>
+                            <option value="2" selected="@(Model.FrameworkId == 2)">Programs Framework</option>
+                            <option value="3" selected="@(Model.FrameworkId == 3)">SDG Framework</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select id="statusFilter" name="status" class="form-select" asp-for="Status">
+                            <option value="">All Statuses</option>
+                            <option value="Planning" selected="@(Model.Status == "Planning")">Planning</option>
+                            <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                            <option value="On Hold" selected="@(Model.Status == "On Hold")">On Hold</option>
+                            <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
+                            <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="regionFilter" class="form-label">Region</label>
+                        <select id="regionFilter" name="region" class="form-select" asp-for="Region">
+                            <option value="">All Regions</option>
+                            <option value="Damascus" selected="@(Model.Region == "Damascus")">Damascus</option>
+                            <option value="Aleppo" selected="@(Model.Region == "Aleppo")">Aleppo</option>
+                            <option value="Homs" selected="@(Model.Region == "Homs")">Homs</option>
+                            <option value="Latakia" selected="@(Model.Region == "Latakia")">Latakia</option>
+                            <option value="Daraa" selected="@(Model.Region == "Daraa")">Daraa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                        <a href="@Url.Page("/Monitoring/Projects")" class="btn btn-outline-secondary">
+                            <i class="bi bi-x"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Projects Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Projects (@Model.Projects.Count)</h5>
+                <div>
+                    <a href="@Url.Page("/Monitoring/Kanban", new { viewType = "project" })" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-kanban"></i> Kanban View
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Projects.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="projectsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Framework</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
+                                    <th>Region</th>
+                                    <th>Sector</th>
+                                    <th>Timeline</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var project in Model.Projects)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <h6 class="mb-1">@project.Name</h6>
+                                                <small class="text-muted">@project.Description</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">@project.Framework</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(project.Status switch 
+                                            {
+                                                "Planning" => "bg-info",
+                                                "Active" => "bg-success",
+                                                "On Hold" => "bg-warning text-dark",
+                                                "Completed" => "bg-primary",
+                                                "Cancelled" => "bg-danger",
+                                                _ => "bg-secondary"
+                                            })">@project.Status</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 60px; height: 8px;">
+                                                    <div class="progress-bar @(project.Progress >= 75 ? "bg-success" : project.Progress >= 50 ? "bg-warning" : "bg-danger")" 
+                                                         role="progressbar" 
+                                                         style="width: @project.Progress%">
+                                                    </div>
+                                                </div>
+                                                <small>@project.Progress.ToString("F0")%</small>
+                                            </div>
+                                        </td>
+                                        <td>@project.Region</td>
+                                        <td>@project.Sector</td>
+                                        <td>
+                                            <small class="text-muted">
+                                                @project.StartDate.ToString("MMM dd") - @project.EndDate.ToString("MMM dd, yyyy")
+                                                @if (project.EndDate < DateTime.Now && project.Status != "Completed")
+                                                {
+                                                    <br><span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Overdue</span>
+                                                }
+                                                else if ((project.EndDate - DateTime.Now).TotalDays <= 30 && project.Status != "Completed")
+                                                {
+                                                    <br><span class="text-warning"><i class="bi bi-clock"></i> Due soon</span>
+                                                }
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="@Url.Page("/Programs/Projects/Details", new { id = project.Id })" 
+                                                   class="btn btn-outline-primary" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                @if (project.Status != "Completed" && project.Status != "Cancelled")
+                                                {
+                                                    <a href="@Url.Page("/Programs/Projects/Edit", new { id = project.Id })" 
+                                                       class="btn btn-outline-secondary" title="Edit">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="mt-3 text-muted">No projects found matching your criteria.</p>
+                        <a href="@Url.Page("/Programs/Projects/Create")" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Create New Project
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#projectsTable').DataTable({
+                responsive: true,
+                pageLength: 25,
+                order: [[0, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: [7] } // Actions column
+                ]
+            });
+        });
+    </script>
+}

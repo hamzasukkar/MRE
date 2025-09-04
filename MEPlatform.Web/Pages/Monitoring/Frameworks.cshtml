@@ -1,0 +1,221 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Monitoring.FrameworksModel
+@{
+    ViewData["Title"] = "Framework Performance";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3"><i class="bi bi-bar-chart me-2"></i>Framework Performance</h1>
+    <div>
+        <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Performance Overview Cards -->
+<div class="row mb-4">
+    @foreach (var framework in Model.Frameworks)
+    {
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">@framework.Name</h5>
+                    <span class="badge @(framework.Status switch 
+                    {
+                        "On Track" => "bg-success",
+                        "At Risk" => "bg-warning text-dark",
+                        "Delayed" => "bg-danger",
+                        _ => "bg-secondary"
+                    })">@framework.Status</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">@framework.Type</p>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small">Overall Progress</span>
+                            <span class="small">@framework.Progress.ToString("F1")%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar @(framework.Progress >= 75 ? "bg-success" : framework.Progress >= 50 ? "bg-warning" : "bg-danger")" 
+                                 role="progressbar" 
+                                 style="width: @framework.Progress%"
+                                 aria-valuenow="@framework.Progress">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h6 class="text-primary mb-0">@framework.TotalProjects</h6>
+                                <small class="text-muted">Projects</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h6 class="text-success mb-0">@framework.CompletedProjects</h6>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-info mb-0">@(framework.TotalProjects - framework.CompletedProjects)</h6>
+                            <small class="text-muted">Remaining</small>
+                        </div>
+                    </div>
+
+                    <!-- Performance Chart Container -->
+                    <div class="mb-3">
+                        <canvas id="chart-@framework.Id" height="100"></canvas>
+                    </div>
+
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>
+                        Last updated: @framework.LastUpdated.ToString("MMM dd, yyyy HH:mm")
+                    </small>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Page("/Frameworks/Details", new { id = framework.Id })" 
+                           class="btn btn-outline-primary btn-sm flex-fill">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                        <a href="@Url.Page("/Monitoring/Projects", new { frameworkId = framework.Id })" 
+                           class="btn btn-outline-info btn-sm flex-fill">
+                            <i class="bi bi-kanban me-1"></i>Projects
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Performance Comparison Chart -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Framework Performance Comparison</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="comparisonChart" height="60"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Individual framework charts
+        @foreach (var framework in Model.Frameworks)
+        {
+            <text>
+            // Chart for @framework.Name
+            const ctx@(framework.Id) = document.getElementById('chart-@framework.Id').getContext('2d');
+            new Chart(ctx@(framework.Id), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Progress',
+                        data: @Html.Raw(Json.Serialize(GenerateProgressData(framework.Progress))),
+                        borderColor: '@(framework.Progress >= 75 ? "#198754" : framework.Progress >= 50 ? "#ffc107" : "#dc3545")',
+                        backgroundColor: '@(framework.Progress >= 75 ? "rgba(25, 135, 84, 0.1)" : framework.Progress >= 50 ? "rgba(255, 193, 7, 0.1)" : "rgba(220, 53, 69, 0.1)")',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+
+        // Comparison chart
+        const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+        new Chart(comparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.Frameworks.Select(f => f.Name).ToList())),
+                datasets: [{
+                    label: 'Progress (%)',
+                    data: @Html.Raw(Json.Serialize(Model.Frameworks.Select(f => f.Progress).ToList())),
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(13, 202, 240, 0.8)',
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(108, 117, 125, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
+
+@functions {
+    private List<decimal> GenerateProgressData(decimal currentProgress)
+    {
+        var random = new Random();
+        var data = new List<decimal>();
+        var start = Math.Max(0, currentProgress - 30);
+        
+        for (int i = 0; i < 6; i++)
+        {
+            var progress = start + (currentProgress - start) * (i + 1) / 6;
+            progress += (decimal)(random.NextDouble() * 10 - 5); // Add some variation
+            data.Add(Math.Max(0, Math.Min(100, progress)));
+        }
+        
+        data[data.Count - 1] = currentProgress; // Ensure last value is current progress
+        return data;
+    }
+}

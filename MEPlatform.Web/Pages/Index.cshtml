@@ -1,0 +1,155 @@
+﻿@page
+@using MEPlatform.Web.Services
+@inject AuthService AuthService
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+    var currentUser = AuthService.GetCurrentUser();
+    var isAuthenticated = currentUser != null;
+}
+
+<div class="hero-section bg-primary text-white py-5 mb-5 rounded">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">Syria M&E Platform</h1>
+                <p class="lead mb-4">
+                    Comprehensive Monitoring & Evaluation platform for Syria development programs. 
+                    Track frameworks, manage programs, and monitor performance across all initiatives.
+                </p>
+                @if (!isAuthenticated)
+                {
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Page("/Account/Login")" class="btn btn-light btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                        </a>
+                        <a href="@Url.Page("/Account/Register")" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-person-plus me-1"></i>Register
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <a href="@Url.Page("/Dashboard/Index")" class="btn btn-light btn-lg">
+                        <i class="bi bi-speedometer2 me-1"></i>Go to Dashboard
+                    </a>
+                }
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-graph-up-arrow" style="font-size: 8rem; opacity: 0.7;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    @if (isAuthenticated)
+    {
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Welcome back, @currentUser.FullName!</h2>
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-speedometer2 text-primary mb-3" style="font-size: 2.5rem;"></i>
+                                <h5 class="card-title">Dashboard</h5>
+                                <p class="card-text">View key metrics and performance indicators</p>
+                                <a href="@Url.Page("/Dashboard/Index")" class="btn btn-primary">View Dashboard</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-bar-chart text-success mb-3" style="font-size: 2.5rem;"></i>
+                                <h5 class="card-title">Monitoring</h5>
+                                <p class="card-text">Track framework and program performance</p>
+                                <a href="@Url.Page("/Monitoring/Frameworks")" class="btn btn-success">Start Monitoring</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-diagram-3 text-warning mb-3" style="font-size: 2.5rem;"></i>
+                                <h5 class="card-title">Frameworks</h5>
+                                <p class="card-text">Manage M&E frameworks and indicators</p>
+                                <a href="@Url.Page("/Frameworks/Index")" class="btn btn-warning">View Frameworks</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-folder text-info mb-3" style="font-size: 2.5rem;"></i>
+                                <h5 class="card-title">Programs</h5>
+                                <p class="card-text">Manage programs and projects</p>
+                                <a href="@Url.Page("/Programs/Index")" class="btn btn-info">View Programs</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Platform Features</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-graph-up text-primary mb-3" style="font-size: 3rem;"></i>
+                                <h5 class="card-title">Framework Management</h5>
+                                <p class="card-text">Comprehensive M&E framework management with hierarchical structure supporting SNDV, Programs Framework, and SDG alignment.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-kanban text-success mb-3" style="font-size: 3rem;"></i>
+                                <h5 class="card-title">Project Monitoring</h5>
+                                <p class="card-text">Real-time project monitoring with Kanban views, performance tracking, and comprehensive reporting capabilities.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-people text-warning mb-3" style="font-size: 3rem;"></i>
+                                <h5 class="card-title">Stakeholder Management</h5>
+                                <p class="card-text">Manage partners, sectors, donors, and regional implementations with detailed performance analytics.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-12">
+            <div class="bg-light p-4 rounded">
+                <h3 class="text-center mb-4">Supported Frameworks</h3>
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <h5 class="text-primary">SNDV Framework</h5>
+                        <p class="text-muted">Syria National Development Vision alignment and tracking</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h5 class="text-success">Programs Framework</h5>
+                        <p class="text-muted">Comprehensive program management and monitoring</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h5 class="text-warning">SDG Framework</h5>
+                        <p class="text-muted">Sustainable Development Goals integration and reporting</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

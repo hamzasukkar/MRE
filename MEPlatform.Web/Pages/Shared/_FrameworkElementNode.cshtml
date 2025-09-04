@@ -1,0 +1,68 @@
+@model MEPlatform.Web.Pages.Frameworks.FrameworkElementSummary
+@{
+    var allElements = ViewData["AllElements"] as List<MEPlatform.Web.Pages.Frameworks.FrameworkElementSummary> ?? new List<MEPlatform.Web.Pages.Frameworks.FrameworkElementSummary>();
+    var childElements = allElements.Where(e => e.ParentId == Model.Id).ToList();
+    var hasChildren = childElements.Any();
+    var indentClass = Model.Level switch
+    {
+        1 => "",
+        2 => "ms-3",
+        3 => "ms-4",
+        4 => "ms-5",
+        _ => "ms-5"
+    };
+}
+
+<div class="framework-element @indentClass mb-2">
+    <div class="d-flex justify-content-between align-items-center p-2 border rounded @(Model.Level == 1 ? "bg-light" : "")">
+        <div class="d-flex align-items-center">
+            @if (hasChildren)
+            {
+                <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#element-@Model.Id" 
+                        aria-expanded="false">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            }
+            else
+            {
+                <span class="me-2" style="width: 20px; display: inline-block;">
+                    <i class="bi bi-arrow-return-right text-muted"></i>
+                </span>
+            }
+            
+            <div>
+                <h6 class="mb-0 @(Model.Level == 1 ? "fw-bold" : "")">@Model.Name</h6>
+                <small class="text-muted">@Model.Description</small>
+            </div>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-secondary">@Model.IndicatorCount indicators</span>
+            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+            {
+                <div class="btn-group btn-group-sm">
+                    <a href="@Url.Page("/Frameworks/Elements/Edit", new { id = Model.Id })" 
+                       class="btn btn-outline-primary btn-sm" title="Edit Element">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="@Url.Page("/Frameworks/Indicators/Create", new { elementId = Model.Id })" 
+                       class="btn btn-outline-success btn-sm" title="Add Indicator">
+                        <i class="bi bi-plus"></i>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+    
+    @if (hasChildren)
+    {
+        <div class="collapse mt-2" id="element-@Model.Id">
+            @foreach (var child in childElements)
+            {
+                @await Html.PartialAsync("_FrameworkElementNode", child, new ViewDataDictionary(ViewData) { { "AllElements", allElements } })
+            }
+        </div>
+    }
+</div>
