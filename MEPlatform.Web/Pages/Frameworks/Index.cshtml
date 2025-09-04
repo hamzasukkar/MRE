@@ -6,6 +6,23 @@
     ViewData["Title"] = "Frameworks";
 }
 
+<!-- Success/Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3"><i class="bi bi-diagram-3 me-2"></i>M&E Frameworks</h1>
     <div>
@@ -115,10 +132,17 @@
                         </a>
                         @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
                         {
-                            <a href="@Url.Page("./Edit", new { id = framework.Id })" 
-                               class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-pencil"></i>
-                            </a>
+                            <div class="btn-group">
+                                <a href="@Url.Page("./Edit", new { id = framework.Id })" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal-@framework.Id"
+                                        title="Delete Framework">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         }
                     </div>
                 </div>
@@ -140,6 +164,47 @@
             </a>
         }
     </div>
+}
+
+<!-- Delete Confirmation Modals -->
+    @foreach (var framework in Model.Frameworks)
+    {
+        <div class="modal fade" id="deleteModal-@framework.Id" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header border-danger">
+                        <h5 class="modal-title text-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Delete Framework
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">
+                            Are you sure you want to delete the framework <strong>"@framework.Name"</strong>?
+                        </p>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Warning:</strong> This action cannot be undone and will:
+                            <ul class="mb-0 mt-2">
+                                <li>Remove all framework elements and indicators</li>
+                                <li>Break alignment with @framework.ProjectsCount project(s)</li>
+                                <li>Delete all associated monitoring data</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <form method="post" asp-page-handler="Delete">
+                            <input type="hidden" name="id" value="@framework.Id" />
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i>Yes, Delete Framework
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 }
 
 <!-- Framework Types Legend -->

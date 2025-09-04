@@ -1,0 +1,211 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "SuperAdministrator,Supervisor")]
+@model MEPlatform.Web.Pages.Frameworks.CreateModel
+@{
+    ViewData["Title"] = "Create Framework";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-2">
+                            <li class="breadcrumb-item"><a href="@Url.Page("/Dashboard/Index")">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="@Url.Page("./Index")">Frameworks</a></li>
+                            <li class="breadcrumb-item active">Create</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0"><i class="bi bi-diagram-3 me-2"></i>Create New Framework</h1>
+                </div>
+                <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Frameworks
+                </a>
+            </div>
+
+            <!-- Main Form -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <form method="post">
+                                <!-- Name -->
+                                <div class="mb-4">
+                                    <label asp-for="Framework.Name" class="form-label fw-bold">
+                                        Framework Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Framework.Name" class="form-control" placeholder="Enter framework name" />
+                                    <span asp-validation-for="Framework.Name" class="text-danger"></span>
+                                    <div class="form-text">A descriptive name for your M&E framework</div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-4">
+                                    <label asp-for="Framework.Description" class="form-label fw-bold">
+                                        Description
+                                    </label>
+                                    <textarea asp-for="Framework.Description" class="form-control" rows="4" 
+                                              placeholder="Describe the purpose and scope of this framework"></textarea>
+                                    <span asp-validation-for="Framework.Description" class="text-danger"></span>
+                                    <div class="form-text">Explain the framework's purpose, scope, and objectives</div>
+                                </div>
+
+                                <!-- Framework Type -->
+                                <div class="mb-4">
+                                    <label asp-for="Framework.Type" class="form-label fw-bold">
+                                        Framework Type <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Framework.Type" class="form-select">
+                                        <option value="">Select framework type...</option>
+                                        <option value="SNDV">SNDV - Syria National Development Vision</option>
+                                        <option value="Programs">Programs - Program Management Framework</option>
+                                        <option value="SDG">SDG - Sustainable Development Goals</option>
+                                        <option value="Custom">Custom - Custom Framework</option>
+                                    </select>
+                                    <span asp-validation-for="Framework.Type" class="text-danger"></span>
+                                    <div class="form-text">Choose the type that best describes your framework</div>
+                                </div>
+
+                                <!-- Weight -->
+                                <div class="mb-4">
+                                    <label asp-for="Framework.Weight" class="form-label fw-bold">
+                                        Weight
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="Framework.Weight" type="number" step="0.01" min="0" max="100" 
+                                               class="form-control" placeholder="0.00" />
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <span asp-validation-for="Framework.Weight" class="text-danger"></span>
+                                    <div class="form-text">Relative importance of this framework (0-100%)</div>
+                                </div>
+
+                                <!-- Icon -->
+                                <div class="mb-4">
+                                    <label asp-for="Framework.Icon" class="form-label fw-bold">
+                                        Icon
+                                    </label>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <input asp-for="Framework.Icon" class="form-control" 
+                                                   placeholder="Bootstrap icon name (e.g., diagram-3)" />
+                                            <span asp-validation-for="Framework.Icon" class="text-danger"></span>
+                                            <div class="form-text">Bootstrap icon name without 'bi-' prefix</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card bg-light h-100 d-flex align-items-center justify-content-center">
+                                                <div class="text-center">
+                                                    <i id="icon-preview" class="bi bi-diagram-3" style="font-size: 2rem;"></i>
+                                                    <div class="small text-muted mt-2">Icon Preview</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="mb-4">
+                                    <div class="form-check form-switch">
+                                        <input asp-for="Framework.IsActive" class="form-check-input" type="checkbox" />
+                                        <label asp-for="Framework.IsActive" class="form-check-label fw-bold">
+                                            Framework is Active
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Active frameworks can be used for project alignment and monitoring</div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex gap-2 pt-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i>Create Framework
+                                    </button>
+                                    <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Panel -->
+                <div class="col-lg-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="bi bi-info-circle me-2"></i>Creating a Framework
+                            </h6>
+                            
+                            <div class="mb-3">
+                                <h6 class="small fw-bold mb-2">Framework Types:</h6>
+                                <ul class="list-unstyled small">
+                                    <li class="mb-2">
+                                        <span class="badge bg-primary me-2">SNDV</span>
+                                        For alignment with Syria's national vision
+                                    </li>
+                                    <li class="mb-2">
+                                        <span class="badge bg-success me-2">Programs</span>
+                                        For program management and coordination
+                                    </li>
+                                    <li class="mb-2">
+                                        <span class="badge bg-info me-2">SDG</span>
+                                        For UN Sustainable Development Goals
+                                    </li>
+                                    <li class="mb-2">
+                                        <span class="badge bg-secondary me-2">Custom</span>
+                                        For organization-specific frameworks
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="small fw-bold mb-2">Best Practices:</h6>
+                                <ul class="list-unstyled small">
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i>Use clear, descriptive names</li>
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i>Provide detailed descriptions</li>
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i>Set appropriate weights</li>
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i>Choose meaningful icons</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h6 class="small fw-bold mb-2">Next Steps:</h6>
+                                <p class="small text-muted">
+                                    After creating the framework, you can add elements, define indicators, 
+                                    and start aligning projects to track progress.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Icon preview functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const iconInput = document.getElementById('Framework_Icon');
+            const iconPreview = document.getElementById('icon-preview');
+            
+            function updateIconPreview() {
+                const iconName = iconInput.value.trim();
+                if (iconName) {
+                    iconPreview.className = `bi bi-${iconName}`;
+                } else {
+                    iconPreview.className = 'bi bi-diagram-3';
+                }
+            }
+            
+            iconInput.addEventListener('input', updateIconPreview);
+            updateIconPreview(); // Initialize
+        });
+    </script>
+}

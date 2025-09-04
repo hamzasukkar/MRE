@@ -1,0 +1,394 @@
+@page "{frameworkId:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Frameworks.Elements.IndexModel
+@{
+    ViewData["Title"] = "Framework Elements";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="@Url.Page("/Dashboard/Index")">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Page("../Index")">Frameworks</a></li>
+                    <li class="breadcrumb-item active">@Model.Framework.Name</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-diagram-3 me-2"></i>@Model.Framework.Name
+                <span class="badge bg-@(Model.Framework.Type == "SNDV" ? "primary" : Model.Framework.Type == "Programs" ? "success" : "info") ms-2">
+                    @Model.Framework.Type
+                </span>
+            </h1>
+        </div>
+        <div class="d-flex gap-2">
+            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+            {
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-plus"></i> Add Element
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="@Url.Page("./Create", new { frameworkId = Model.FrameworkId, type = "Outcome" })">
+                            <i class="bi bi-target me-2"></i>Outcome
+                        </a></li>
+                        <li><a class="dropdown-item" href="@Url.Page("./Create", new { frameworkId = Model.FrameworkId, type = "Output" })">
+                            <i class="bi bi-box-arrow-up me-2"></i>Output
+                        </a></li>
+                        <li><a class="dropdown-item" href="@Url.Page("./Create", new { frameworkId = Model.FrameworkId, type = "SubOutput" })">
+                            <i class="bi bi-arrow-up-right me-2"></i>Sub-output
+                        </a></li>
+                    </ul>
+                </div>
+            }
+            <a href="@Url.Page("../Details", new { id = Model.FrameworkId })" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Framework
+            </a>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Framework Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-2">
+                            <h5 class="text-primary mb-0">@Model.Statistics.OutcomesCount</h5>
+                            <small class="text-muted">Outcomes</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h5 class="text-success mb-0">@Model.Statistics.OutputsCount</h5>
+                            <small class="text-muted">Outputs</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h5 class="text-info mb-0">@Model.Statistics.SubOutputsCount</h5>
+                            <small class="text-muted">Sub-outputs</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h5 class="text-warning mb-0">@Model.Statistics.IndicatorsCount</h5>
+                            <small class="text-muted">Indicators</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h5 class="text-secondary mb-0">@Model.Statistics.MeasurementsCount</h5>
+                            <small class="text-muted">Measurements</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h5 class="text-dark mb-0">@Model.Statistics.OverallProgress.ToString("F1")%</h5>
+                            <small class="text-muted">Progress</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Elements Tree Structure -->
+    <div class="row">
+        <div class="col-12">
+            @if (Model.Elements.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-diagram-2 me-2"></i>Framework Structure</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var outcome in Model.Elements.Where(e => e.Type == "Outcome").OrderBy(e => e.Name))
+                        {
+                            <div class="framework-element mb-4" data-element-type="outcome">
+                                <!-- Outcome -->
+                                <div class="element-header outcome-header p-3 bg-primary text-white rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-@(outcome.Icon ?? "target") me-3" style="font-size: 1.5rem;"></i>
+                                            <div>
+                                                <h5 class="mb-1">@outcome.Name</h5>
+                                                <small class="opacity-75">Outcome • Weight: @outcome.Weight%</small>
+                                            </div>
+                                        </div>
+                                        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                                        {
+                                            <div class="btn-group">
+                                                <a href="@Url.Page("./Edit", new { id = outcome.Id })" class="btn btn-outline-light btn-sm">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="@Url.Page("./Create", new { frameworkId = Model.FrameworkId, type = "Output", parentId = outcome.Id })" 
+                                                   class="btn btn-outline-light btn-sm" title="Add Output">
+                                                    <i class="bi bi-plus"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                        data-bs-toggle="modal" data-bs-target="#deleteModal-@outcome.Id">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(outcome.Description))
+                                    {
+                                        <div class="mt-2">
+                                            <small class="opacity-75">@outcome.Description</small>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Outputs -->
+                                @foreach (var output in Model.Elements.Where(e => e.ParentId == outcome.Id && e.Type == "Output").OrderBy(e => e.Name))
+                                {
+                                    <div class="element-child ms-4 mt-3">
+                                        <div class="element-header output-header p-2 bg-success text-white rounded">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-@(output.Icon ?? "box-arrow-up") me-2"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">@output.Name</h6>
+                                                        <small class="opacity-75">Output • Weight: @output.Weight%</small>
+                                                    </div>
+                                                </div>
+                                                @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                                                {
+                                                    <div class="btn-group">
+                                                        <a href="@Url.Page("./Edit", new { id = output.Id })" class="btn btn-outline-light btn-sm">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                        <a href="@Url.Page("./Create", new { frameworkId = Model.FrameworkId, type = "SubOutput", parentId = output.Id })" 
+                                                           class="btn btn-outline-light btn-sm" title="Add Sub-output">
+                                                            <i class="bi bi-plus"></i>
+                                                        </a>
+                                                        <a href="@Url.Page("../Indicators/Create", new { frameworkId = Model.FrameworkId, elementId = output.Id })" 
+                                                           class="btn btn-outline-warning btn-sm" title="Add Indicator">
+                                                            <i class="bi bi-speedometer2"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                                data-bs-toggle="modal" data-bs-target="#deleteModal-@output.Id">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Sub-outputs -->
+                                        @foreach (var subOutput in Model.Elements.Where(e => e.ParentId == output.Id && e.Type == "SubOutput").OrderBy(e => e.Name))
+                                        {
+                                            <div class="element-child ms-4 mt-2">
+                                                <div class="element-header sub-output-header p-2 bg-info text-white rounded">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-@(subOutput.Icon ?? "arrow-up-right") me-2"></i>
+                                                            <div>
+                                                                <h6 class="mb-0">@subOutput.Name</h6>
+                                                                <small class="opacity-75">Sub-output • Weight: @subOutput.Weight%</small>
+                                                            </div>
+                                                        </div>
+                                                        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                                                        {
+                                                            <div class="btn-group">
+                                                                <a href="@Url.Page("./Edit", new { id = subOutput.Id })" class="btn btn-outline-light btn-sm">
+                                                                    <i class="bi bi-pencil"></i>
+                                                                </a>
+                                                                <a href="@Url.Page("../Indicators/Create", new { frameworkId = Model.FrameworkId, elementId = subOutput.Id })" 
+                                                                   class="btn btn-outline-warning btn-sm" title="Add Indicator">
+                                                                    <i class="bi bi-speedometer2"></i>
+                                                                </a>
+                                                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                                        data-bs-toggle="modal" data-bs-target="#deleteModal-@subOutput.Id">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                <!-- Sub-output Indicators -->
+                                                @if (Model.Indicators.Any(i => i.ElementId == subOutput.Id))
+                                                {
+                                                    <div class="indicators-list ms-3 mt-2">
+                                                        @foreach (var indicator in Model.Indicators.Where(i => i.ElementId == subOutput.Id).Take(3))
+                                                        {
+                                                            <div class="indicator-item d-flex align-items-center justify-content-between p-2 bg-light rounded mb-1">
+                                                                <div class="d-flex align-items-center">
+                                                                    <i class="bi bi-speedometer2 text-warning me-2"></i>
+                                                                    <small>@indicator.Name</small>
+                                                                </div>
+                                                                @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                                                                {
+                                                                    <div class="btn-group">
+                                                                        <a href="@Url.Page("../Indicators/Edit", new { id = indicator.Id })" class="btn btn-outline-secondary btn-sm">
+                                                                            <i class="bi bi-pencil"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                        @if (Model.Indicators.Count(i => i.ElementId == subOutput.Id) > 3)
+                                                        {
+                                                            <div class="text-muted small">
+                                                                <i class="bi bi-three-dots"></i> and @(Model.Indicators.Count(i => i.ElementId == subOutput.Id) - 3) more indicators
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+
+                                        <!-- Output Indicators (if no sub-outputs) -->
+                                        @if (!Model.Elements.Any(e => e.ParentId == output.Id && e.Type == "SubOutput") && Model.Indicators.Any(i => i.ElementId == output.Id))
+                                        {
+                                            <div class="indicators-list ms-3 mt-2">
+                                                @foreach (var indicator in Model.Indicators.Where(i => i.ElementId == output.Id).Take(3))
+                                                {
+                                                    <div class="indicator-item d-flex align-items-center justify-content-between p-2 bg-light rounded mb-1">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-speedometer2 text-warning me-2"></i>
+                                                            <small>@indicator.Name</small>
+                                                        </div>
+                                                        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                                                        {
+                                                            <div class="btn-group">
+                                                                <a href="@Url.Page("../Indicators/Edit", new { id = indicator.Id })" class="btn btn-outline-secondary btn-sm">
+                                                                    <i class="bi bi-pencil"></i>
+                                                                </a>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-diagram-2" style="font-size: 4rem; color: #ccc;"></i>
+                    <h4 class="mt-3 text-muted">No elements found</h4>
+                    <p class="text-muted">Start building your framework structure by adding outcomes, outputs, and indicators.</p>
+                    @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                    {
+                        <a href="@Url.Page("./Create", new { frameworkId = Model.FrameworkId, type = "Outcome" })" class="btn btn-primary mt-3">
+                            <i class="bi bi-plus"></i> Create Your First Outcome
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modals -->
+@foreach (var element in Model.Elements)
+{
+    <div class="modal fade" id="deleteModal-@element.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete @element.Type
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">
+                        Are you sure you want to delete <strong>"@element.Name"</strong>?
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action will also delete:
+                        <ul class="mb-0 mt-2">
+                            <li>All child elements and sub-elements</li>
+                            <li>All associated indicators and measurements</li>
+                            <li>Historical performance data</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="id" value="@element.Id" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>Yes, Delete @element.Type
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+    <style>
+        .framework-element {
+            border-left: 4px solid #0d6efd;
+            margin-left: 1rem;
+        }
+        
+        .element-child {
+            position: relative;
+        }
+        
+        .element-child::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        
+        .element-child::after {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 20px;
+            width: 15px;
+            height: 2px;
+            background: #dee2e6;
+        }
+        
+        .outcome-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%) !important;
+        }
+        
+        .output-header {
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%) !important;
+        }
+        
+        .sub-output-header {
+            background: linear-gradient(135deg, #0dcaf0 0%, #087990 100%) !important;
+        }
+        
+        .indicator-item {
+            transition: all 0.2s ease;
+        }
+        
+        .indicator-item:hover {
+            background: #f8f9fa !important;
+            transform: translateX(5px);
+        }
+    </style>
+}

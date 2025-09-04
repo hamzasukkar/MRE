@@ -1,0 +1,324 @@
+@page "{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "SuperAdministrator,Supervisor")]
+@model MEPlatform.Web.Pages.Frameworks.Elements.EditModel
+@{
+    ViewData["Title"] = $"Edit {Model.Element.Type}";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-2">
+                            <li class="breadcrumb-item"><a href="@Url.Page("/Dashboard/Index")">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="@Url.Page("../Index")">Frameworks</a></li>
+                            <li class="breadcrumb-item"><a href="@Url.Page("./Index", new { frameworkId = Model.Element.FrameworkId })">@Model.Framework.Name</a></li>
+                            <li class="breadcrumb-item active">Edit @Model.Element.Type</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-pencil me-2"></i>Edit @Model.Element.Type
+                    </h1>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="@Url.Page("./Index", new { frameworkId = Model.Element.FrameworkId })" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Framework
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Form -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-@(GetElementColorClass(Model.Element.Type)) text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-@(Model.Element.Icon ?? GetDefaultIcon(Model.Element.Type)) me-2"></i>@Model.Element.Name
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <input type="hidden" asp-for="Element.Id" />
+                                <input type="hidden" asp-for="Element.FrameworkId" />
+                                <input type="hidden" asp-for="Element.Type" />
+
+                                <!-- Name -->
+                                <div class="mb-4">
+                                    <label asp-for="Element.Name" class="form-label fw-bold">
+                                        @Model.Element.Type Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Element.Name" class="form-control" />
+                                    <span asp-validation-for="Element.Name" class="text-danger"></span>
+                                    <div class="form-text">A clear, descriptive name for this @Model.Element.Type.ToLower()</div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-4">
+                                    <label asp-for="Element.Description" class="form-label fw-bold">
+                                        Description
+                                    </label>
+                                    <textarea asp-for="Element.Description" class="form-control" rows="4"></textarea>
+                                    <span asp-validation-for="Element.Description" class="text-danger"></span>
+                                    <div class="form-text">Explain what this @Model.Element.Type.ToLower() aims to achieve</div>
+                                </div>
+
+                                <!-- Parent Selection (for Output and Sub-output) -->
+                                @if (Model.Element.Type == "Output" || Model.Element.Type == "SubOutput")
+                                {
+                                    <div class="mb-4">
+                                        <label asp-for="Element.ParentId" class="form-label fw-bold">
+                                            Parent @(Model.Element.Type == "Output" ? "Outcome" : "Output")
+                                        </label>
+                                        <select asp-for="Element.ParentId" class="form-select">
+                                            <option value="">Select parent...</option>
+                                            @foreach (var parent in Model.AvailableParents)
+                                            {
+                                                <option value="@parent.Id" selected="@(parent.Id == Model.Element.ParentId)">@parent.Name</option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="Element.ParentId" class="text-danger"></span>
+                                        <div class="form-text">Choose which @(Model.Element.Type == "Output" ? "outcome" : "output") this belongs to</div>
+                                    </div>
+                                }
+
+                                <!-- Weight -->
+                                <div class="mb-4">
+                                    <label asp-for="Element.Weight" class="form-label fw-bold">
+                                        Weight
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="Element.Weight" type="number" step="0.1" min="0" max="100" 
+                                               class="form-control" />
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <span asp-validation-for="Element.Weight" class="text-danger"></span>
+                                    <div class="form-text">Relative importance within its parent (0-100%)</div>
+                                </div>
+
+                                <!-- Icon -->
+                                <div class="mb-4">
+                                    <label asp-for="Element.Icon" class="form-label fw-bold">
+                                        Icon
+                                    </label>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <input asp-for="Element.Icon" class="form-control" 
+                                                   placeholder="Bootstrap icon name" />
+                                            <span asp-validation-for="Element.Icon" class="text-danger"></span>
+                                            <div class="form-text">Bootstrap icon name without 'bi-' prefix</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card bg-light h-100 d-flex align-items-center justify-content-center">
+                                                <div class="text-center">
+                                                    <i id="icon-preview" class="bi" style="font-size: 2rem;"></i>
+                                                    <div class="small text-muted mt-2">Icon Preview</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Performance Metrics -->
+                                <div class="mb-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Performance Overview</h6>
+                                            <div class="row text-center">
+                                                <div class="col-md-3">
+                                                    <div class="text-muted small">Children</div>
+                                                    <div class="fw-bold">@Model.Element.ChildrenCount</div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-muted small">Indicators</div>
+                                                    <div class="fw-bold">@Model.Element.IndicatorsCount</div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-muted small">Progress</div>
+                                                    <div class="fw-bold">@Model.Element.Performance.ToString("F1")%</div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-muted small">Created</div>
+                                                    <div class="fw-bold">@Model.Element.CreatedAt.ToString("MMM yyyy")</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex gap-2 pt-3">
+                                    <button type="submit" class="btn btn-@(GetElementColorClass(Model.Element.Type))">
+                                        <i class="bi bi-check-circle me-1"></i>Update @Model.Element.Type
+                                    </button>
+                                    <a href="@Url.Page("./Index", new { frameworkId = Model.Element.FrameworkId })" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Panel -->
+                <div class="col-lg-4">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="bi bi-tools me-2"></i>@Model.Element.Type Actions
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="small fw-bold">Structure Management:</h6>
+                                <div class="d-grid gap-2">
+                                    @if (Model.Element.Type == "Outcome")
+                                    {
+                                        <a href="@Url.Page("./Create", new { frameworkId = Model.Element.FrameworkId, type = "Output", parentId = Model.Element.Id })" 
+                                           class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-plus me-1"></i>Add Output
+                                        </a>
+                                    }
+                                    @if (Model.Element.Type == "Output")
+                                    {
+                                        <a href="@Url.Page("./Create", new { frameworkId = Model.Element.FrameworkId, type = "SubOutput", parentId = Model.Element.Id })" 
+                                           class="btn btn-outline-info btn-sm">
+                                            <i class="bi bi-plus me-1"></i>Add Sub-output
+                                        </a>
+                                    }
+                                    @if (Model.Element.Type == "Output" || Model.Element.Type == "SubOutput")
+                                    {
+                                        <a href="@Url.Page("../Indicators/Create", new { frameworkId = Model.Element.FrameworkId, elementId = Model.Element.Id })" 
+                                           class="btn btn-outline-warning btn-sm">
+                                            <i class="bi bi-speedometer2 me-1"></i>Add Indicator
+                                        </a>
+                                        <a href="@Url.Page("../Indicators/Index", new { elementId = Model.Element.Id })" 
+                                           class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-list me-1"></i>Manage Indicators
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div>
+                                <h6 class="small fw-bold text-danger">Danger Zone:</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm w-100" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    <i class="bi bi-trash me-1"></i>Delete @Model.Element.Type
+                                </button>
+                                <div class="form-text">
+                                    This will delete all child elements and indicators.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Framework Context -->
+                    <div class="card border-primary mt-3">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">Hierarchy</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>Framework:</strong> @Model.Framework.Name
+                            </div>
+                            @if (Model.Parent != null)
+                            {
+                                <div class="mb-2">
+                                    <strong>Parent:</strong> @Model.Parent.Name
+                                </div>
+                            }
+                            <div class="mb-2">
+                                <strong>Level:</strong> <span class="badge bg-@(GetElementColorClass(Model.Element.Type))">@Model.Element.Type</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-danger">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Delete @Model.Element.Type
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">
+                    Are you sure you want to delete <strong>"@Model.Element.Name"</strong>?
+                </p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action will also delete:
+                    <ul class="mb-0 mt-2">
+                        <li>@Model.Element.ChildrenCount child element(s)</li>
+                        <li>@Model.Element.IndicatorsCount indicator(s)</li>
+                        <li>All associated measurements and data</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form method="post" asp-page-handler="Delete">
+                    <input type="hidden" asp-for="Element.Id" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Yes, Delete @Model.Element.Type
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Icon preview functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const iconInput = document.getElementById('Element_Icon');
+            const iconPreview = document.getElementById('icon-preview');
+            
+            function updateIconPreview() {
+                const iconName = iconInput.value.trim();
+                if (iconName) {
+                    iconPreview.className = `bi bi-${iconName}`;
+                } else {
+                    iconPreview.className = 'bi bi-@(Model.Element.Icon ?? GetDefaultIcon(Model.Element.Type))';
+                }
+            }
+            
+            iconInput.addEventListener('input', updateIconPreview);
+            updateIconPreview(); // Initialize
+        });
+    </script>
+}
+
+@functions {
+    string GetDefaultIcon(string elementType) => elementType switch
+    {
+        "Outcome" => "target",
+        "Output" => "box-arrow-up",
+        "SubOutput" => "arrow-up-right",
+        _ => "circle"
+    };
+
+    string GetElementColorClass(string elementType) => elementType switch
+    {
+        "Outcome" => "primary",
+        "Output" => "success",
+        "SubOutput" => "info",
+        _ => "secondary"
+    };
+}

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MEPlatform.Web.Services;
+using MEPlatform.Web.Models;
 
 namespace MEPlatform.Web.Pages.Frameworks
 {
@@ -99,20 +101,33 @@ namespace MEPlatform.Web.Pages.Frameworks
                 }
             };
         }
-    }
 
-    public class FrameworkSummary
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
-        public int ElementsCount { get; set; }
-        public int IndicatorsCount { get; set; }
-        public int ProjectsCount { get; set; }
-        public decimal? OverallProgress { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public List<string> TopLevelElements { get; set; } = new();
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            // Check authorization
+            if (!User.IsInRole("SuperAdministrator") && !User.IsInRole("Supervisor"))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                // TODO: Replace with actual API call when implemented
+                // await _frameworkApiService.DeleteFrameworkAsync(id);
+                
+                // For now, simulate success
+                await Task.Delay(500); // Simulate API call
+                
+                var frameworkName = CreateMockFrameworkSummaries().FirstOrDefault(f => f.Id == id)?.Name ?? "Framework";
+                TempData["SuccessMessage"] = $"Framework '{frameworkName}' has been deleted successfully!";
+                
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error deleting framework: {ex.Message}";
+                return RedirectToPage();
+            }
+        }
     }
 }

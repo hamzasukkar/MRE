@@ -1,0 +1,269 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "SuperAdministrator,Supervisor")]
+@model MEPlatform.Web.Pages.Frameworks.Indicators.CreateModel
+@{
+    ViewData["Title"] = $"Create Indicator - {Model.Element?.Name}";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-2">
+                            <li class="breadcrumb-item"><a href="@Url.Page("/Dashboard/Index")">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="@Url.Page("../Index")">Frameworks</a></li>
+                            <li class="breadcrumb-item"><a href="@Url.Page("../Elements/Index", new { frameworkId = Model.Element?.FrameworkId })">@Model.Framework?.Name</a></li>
+                            <li class="breadcrumb-item"><a href="@Url.Page("./Index", new { elementId = Model.ElementId })">Indicators</a></li>
+                            <li class="breadcrumb-item active">Create Indicator</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i>Create New Indicator
+                    </h1>
+                    <p class="text-muted">Add a performance indicator for @Model.Element?.Name</p>
+                </div>
+                <a href="@Url.Page("./Index", new { elementId = Model.ElementId })" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Indicators
+                </a>
+            </div>
+
+            <!-- Element Context -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-@(Model.Element?.Icon ?? "circle") me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <h6 class="mb-1">Creating indicator for: @Model.Element?.Name</h6>
+                                <small class="text-muted">@Model.Element?.Type in @Model.Framework?.Name Framework</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Form -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="bi bi-speedometer2 me-2"></i>Indicator Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <input type="hidden" asp-for="ElementId" />
+
+                                <!-- Name -->
+                                <div class="mb-4">
+                                    <label asp-for="Indicator.Name" class="form-label fw-bold">
+                                        Indicator Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Indicator.Name" class="form-control" placeholder="Enter indicator name" />
+                                    <span asp-validation-for="Indicator.Name" class="text-danger"></span>
+                                    <div class="form-text">A clear, specific name describing what is being measured</div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-4">
+                                    <label asp-for="Indicator.Description" class="form-label fw-bold">
+                                        Description
+                                    </label>
+                                    <textarea asp-for="Indicator.Description" class="form-control" rows="3" 
+                                              placeholder="Describe what this indicator measures and how it's calculated"></textarea>
+                                    <span asp-validation-for="Indicator.Description" class="text-danger"></span>
+                                    <div class="form-text">Explain what this indicator measures and its purpose</div>
+                                </div>
+
+                                <!-- Measurement Details -->
+                                <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <label asp-for="Indicator.Unit" class="form-label fw-bold">
+                                            Unit of Measurement
+                                        </label>
+                                        <input asp-for="Indicator.Unit" class="form-control" placeholder="e.g., %, km, people" />
+                                        <span asp-validation-for="Indicator.Unit" class="text-danger"></span>
+                                        <div class="form-text">Unit symbol or name</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label asp-for="Indicator.Target" class="form-label fw-bold">
+                                            Target Value
+                                        </label>
+                                        <input asp-for="Indicator.Target" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                                        <span asp-validation-for="Indicator.Target" class="text-danger"></span>
+                                        <div class="form-text">Goal to achieve</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label asp-for="Indicator.Baseline" class="form-label fw-bold">
+                                            Baseline Value
+                                        </label>
+                                        <input asp-for="Indicator.Baseline" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                                        <span asp-validation-for="Indicator.Baseline" class="text-danger"></span>
+                                        <div class="form-text">Starting point value</div>
+                                    </div>
+                                </div>
+
+                                <!-- Measurement Frequency -->
+                                <div class="mb-4">
+                                    <label asp-for="Indicator.MeasurementFrequency" class="form-label fw-bold">
+                                        Measurement Frequency
+                                    </label>
+                                    <select asp-for="Indicator.MeasurementFrequency" class="form-select">
+                                        <option value="">Select frequency...</option>
+                                        <option value="Weekly">Weekly</option>
+                                        <option value="Monthly">Monthly</option>
+                                        <option value="Quarterly">Quarterly</option>
+                                        <option value="Semi-Annual">Semi-Annual</option>
+                                        <option value="Annual">Annual</option>
+                                        <option value="Ad-hoc">Ad-hoc</option>
+                                    </select>
+                                    <span asp-validation-for="Indicator.MeasurementFrequency" class="text-danger"></span>
+                                    <div class="form-text">How often will this indicator be measured?</div>
+                                </div>
+
+                                <!-- Data Source -->
+                                <div class="mb-4">
+                                    <label asp-for="Indicator.DataSource" class="form-label fw-bold">
+                                        Data Source
+                                    </label>
+                                    <input asp-for="Indicator.DataSource" class="form-control" 
+                                           placeholder="e.g., Monthly reports, Surveys, System records" />
+                                    <span asp-validation-for="Indicator.DataSource" class="text-danger"></span>
+                                    <div class="form-text">Where will the data come from?</div>
+                                </div>
+
+                                <!-- Responsible Party -->
+                                <div class="mb-4">
+                                    <label asp-for="Indicator.ResponsibleParty" class="form-label fw-bold">
+                                        Responsible Party
+                                    </label>
+                                    <input asp-for="Indicator.ResponsibleParty" class="form-control" 
+                                           placeholder="Person or team responsible for data collection" />
+                                    <span asp-validation-for="Indicator.ResponsibleParty" class="text-danger"></span>
+                                    <div class="form-text">Who is responsible for collecting this data?</div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex gap-2 pt-3">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="bi bi-check-circle me-1"></i>Create Indicator
+                                    </button>
+                                    <a href="@Url.Page("./Index", new { elementId = Model.ElementId })" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Panel -->
+                <div class="col-lg-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="bi bi-lightbulb me-2"></i>Indicator Guidelines
+                            </h6>
+                            
+                            <div class="mb-3">
+                                <h6 class="small fw-bold mb-2">SMART Indicators:</h6>
+                                <ul class="list-unstyled small">
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i><strong>Specific:</strong> Clear and well-defined</li>
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i><strong>Measurable:</strong> Quantifiable</li>
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i><strong>Achievable:</strong> Realistic targets</li>
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i><strong>Relevant:</strong> Aligned with objectives</li>
+                                    <li class="mb-1"><i class="bi bi-check text-success me-2"></i><strong>Time-bound:</strong> Has deadlines</li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="small fw-bold mb-2">Examples by Type:</h6>
+                                @if (Model.Element?.Type == "Outcome")
+                                {
+                                    <div class="small text-muted">
+                                        <strong>Outcome indicators:</strong><br>
+                                        • Poverty reduction rate (%)<br>
+                                        • Literacy rate increase (%)<br>
+                                        • GDP growth rate (%)
+                                    </div>
+                                }
+                                else if (Model.Element?.Type == "Output")
+                                {
+                                    <div class="small text-muted">
+                                        <strong>Output indicators:</strong><br>
+                                        • Schools constructed (number)<br>
+                                        • People trained (number)<br>
+                                        • Roads built (kilometers)
+                                    </div>
+                                }
+                                else if (Model.Element?.Type == "SubOutput")
+                                {
+                                    <div class="small text-muted">
+                                        <strong>Sub-output indicators:</strong><br>
+                                        • Materials delivered (tons)<br>
+                                        • Staff recruited (number)<br>
+                                        • Quality checks passed (%)
+                                    </div>
+                                }
+                            </div>
+
+                            <div>
+                                <h6 class="small fw-bold mb-2">Best Practices:</h6>
+                                <ul class="list-unstyled small text-muted">
+                                    <li class="mb-1">• Use active, descriptive language</li>
+                                    <li class="mb-1">• Include clear measurement units</li>
+                                    <li class="mb-1">• Set realistic, challenging targets</li>
+                                    <li class="mb-1">• Identify reliable data sources</li>
+                                    <li class="mb-1">• Assign clear responsibilities</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Element Context Card -->
+                    <div class="card border-@(GetElementColorClass(Model.Element?.Type)) mt-3">
+                        <div class="card-header bg-@(GetElementColorClass(Model.Element?.Type)) text-white">
+                            <h6 class="mb-0">Context</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>Framework:</strong> @Model.Framework?.Name
+                            </div>
+                            <div class="mb-2">
+                                <strong>Element:</strong> @Model.Element?.Name
+                            </div>
+                            <div class="mb-2">
+                                <strong>Type:</strong> <span class="badge bg-@(GetElementColorClass(Model.Element?.Type))">@Model.Element?.Type</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Element?.Description))
+                            {
+                                <div class="mb-0">
+                                    <small class="text-muted">@Model.Element?.Description</small>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+@functions {
+    string GetElementColorClass(string? elementType) => elementType switch
+    {
+        "Outcome" => "primary",
+        "Output" => "success",
+        "SubOutput" => "info",
+        _ => "secondary"
+    };
+}
