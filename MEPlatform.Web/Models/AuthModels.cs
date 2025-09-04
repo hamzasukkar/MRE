@@ -47,22 +47,29 @@ namespace MEPlatform.Web.Models
 
     public class AuthResult
     {
-        public bool Success { get; set; }
+        public bool IsSuccess { get; set; }
         public string Token { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
         public DateTime Expiration { get; set; }
-        public List<string> Errors { get; set; } = new();
+        public IEnumerable<string> Errors { get; set; } = new List<string>();
         public UserInfo? User { get; set; }
+        
+        // For backward compatibility
+        public bool Success => IsSuccess;
     }
 
     public class UserInfo
     {
-        public int Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string FullName => $"{FirstName} {LastName}";
-        public List<string> Roles { get; set; } = new();
+        public string Role { get; set; } = string.Empty;
+        public string? ProfilePictureUrl { get; set; }
+        
+        // For backward compatibility - convert single role to list
+        public List<string> Roles => new List<string> { Role };
     }
 
     public class ApiResponse<T>

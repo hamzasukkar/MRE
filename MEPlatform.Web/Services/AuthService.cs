@@ -50,10 +50,10 @@ namespace MEPlatform.Web.Services
                     }
                 }
 
-                var errorResponse = JsonConvert.DeserializeObject<ApiResponse<object>>(responseContent);
+                var errorResponse = JsonConvert.DeserializeObject<AuthResult>(responseContent);
                 return new AuthResult
                 {
-                    Success = false,
+                    IsSuccess = false,
                     Errors = errorResponse?.Errors ?? new List<string> { "Login failed" }
                 };
             }
@@ -61,7 +61,7 @@ namespace MEPlatform.Web.Services
             {
                 return new AuthResult
                 {
-                    Success = false,
+                    IsSuccess = false,
                     Errors = new List<string> { $"Error: {ex.Message}" }
                 };
             }
@@ -98,7 +98,7 @@ namespace MEPlatform.Web.Services
                 var errorResponse = JsonConvert.DeserializeObject<ApiResponse<object>>(responseContent);
                 return new AuthResult
                 {
-                    Success = false,
+                    IsSuccess = false,
                     Errors = errorResponse?.Errors ?? new List<string> { "Registration failed" }
                 };
             }
@@ -106,7 +106,7 @@ namespace MEPlatform.Web.Services
             {
                 return new AuthResult
                 {
-                    Success = false,
+                    IsSuccess = false,
                     Errors = new List<string> { $"Error: {ex.Message}" }
                 };
             }
@@ -128,13 +128,15 @@ namespace MEPlatform.Web.Services
             {
                 var claims = context.User.Claims.ToList();
                 
+                var role = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "";
+                
                 return new UserInfo
                 {
-                    Id = int.Parse(claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "0"),
+                    Id = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "",
                     Email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? "",
                     FirstName = claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value ?? "",
                     LastName = claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value ?? "",
-                    Roles = claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList()
+                    Role = role
                 };
             }
             return null;
@@ -152,25 +154,27 @@ namespace MEPlatform.Web.Services
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, authResult.User.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, authResult.User.Id),
                 new Claim(ClaimTypes.Email, authResult.User.Email),
                 new Claim(ClaimTypes.GivenName, authResult.User.FirstName),
                 new Claim(ClaimTypes.Surname, authResult.User.LastName),
                 new Claim("Token", authResult.Token),
             };
 
-            foreach (var role in authResult.User.Roles)
+            if (!string.IsNullOrEmpty(authResult.User.Role))
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim(ClaimTypes.Role, authResult.User.Role));
             }
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
+            var tokenExpiration = GetTokenExpiration(authResult.Token);
+            
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = true,
-                ExpiresUtc = authResult.Expiration
+                ExpiresUtc = tokenExpiration
             };
 
             var context = _httpContextAccessor.HttpContext;
@@ -184,6 +188,21 @@ namespace MEPlatform.Web.Services
         {
             var context = _httpContextAccessor.HttpContext;
             return context?.User?.FindFirst("Token")?.Value;
+        }
+
+        private DateTimeOffset GetTokenExpiration(string token)
+        {
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jsonToken = handler.ReadJwtToken(token);
+                return jsonToken.ValidTo;
+            }
+            catch
+            {
+                // If we can't read the token, default to 7 days from now
+                return DateTimeOffset.UtcNow.AddDays(7);
+            }
         }
     }
 }

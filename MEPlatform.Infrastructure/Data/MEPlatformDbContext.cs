@@ -87,19 +87,20 @@ public class MEPlatformDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<ProjectAlignment>()
             .HasOne(pa => pa.Program)
             .WithMany(p => p.ProjectAlignments)
-            .HasForeignKey(pa => pa.ProgramId);
+            .HasForeignKey(pa => pa.ProgramId)
+            .OnDelete(DeleteBehavior.Cascade);
             
         modelBuilder.Entity<ProjectAlignment>()
             .HasOne(pa => pa.Framework)
             .WithMany(f => f.ProjectAlignments)
             .HasForeignKey(pa => pa.FrameworkId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
             
         modelBuilder.Entity<ProjectAlignment>()
             .HasOne(pa => pa.FrameworkElement)
             .WithMany(fe => fe.ProjectAlignments)
             .HasForeignKey(pa => pa.FrameworkElementId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
         
         // Seed initial data
         SeedInitialData(modelBuilder);
