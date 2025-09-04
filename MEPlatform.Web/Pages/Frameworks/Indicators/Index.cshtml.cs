@@ -129,7 +129,8 @@ namespace MEPlatform.Web.Pages.Frameworks.Indicators
             var allIndicators = new List<IndicatorSummary>
             {
                 // Road Network Rehabilitation (ElementId: 3)
-                new() { Id = 1, Name = "Kilometers of roads rehabilitated", ElementId = 3, Unit = "km", Target = 500, CurrentValue = 342, Description = "Total kilometers of main roads successfully rehabilitated", CreatedAt = DateTime.Now.AddMonths(-4), MeasurementsCount = 12 },
+                new() { Id = 1, Name = "Kilometers of roads rehabilitated", ElementId = 3, Unit = "km", Target = 500, CurrentValue = 342, Description = "Total kilometers of main roads successfully rehabilitated", CreatedAt = DateTime.Now.AddMonths(-4), MeasurementsCount = 12,
+                       Trend = 2.8m, Performance = 68.4m, FinancialPerformance = 72.1m, PhysicalPerformance = 64.7m, OtherPerformance = 68.4m, GAGRA = 15.2m, GAGRR = 8.7m, Source = "Engineering Reports", IndicatorImpact = "+", TargetYear = 2024 },
                 new() { Id = 2, Name = "Road quality index improvement", ElementId = 3, Unit = "points", Target = 8.5m, CurrentValue = 7.2m, Description = "Average road quality rating on 10-point scale", CreatedAt = DateTime.Now.AddMonths(-3), MeasurementsCount = 8 },
                 
                 // Energy Sector Recovery (ElementId: 4)

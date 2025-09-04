@@ -75,6 +75,33 @@
                         </div>
                     </div>
 
+                    <!-- Performance Metrics -->
+                    <div class="mb-3">
+                        <h6 class="text-muted small mb-2">PERFORMANCE METRICS</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="small">
+                                    <div class="fw-bold text-primary">@framework.FinancialPerformance.ToString("F1")%</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Financial</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small">
+                                    <div class="fw-bold text-success">@framework.PhysicalPerformance.ToString("F1")%</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Physical</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small">
+                                    <div class="fw-bold @(framework.Trend >= 0 ? "text-success" : "text-danger")">
+                                        @(framework.Trend >= 0 ? "+" : "")@framework.Trend.ToString("F1")%
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Trend</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Progress Overview -->
                     @if (framework.OverallProgress.HasValue)
                     {

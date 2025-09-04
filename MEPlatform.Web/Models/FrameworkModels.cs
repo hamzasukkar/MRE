@@ -16,6 +16,13 @@ namespace MEPlatform.Web.Models
         public decimal? OverallProgress { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<string> TopLevelElements { get; set; } = new();
+        
+        // Performance metrics
+        public decimal Trend { get; set; }
+        public decimal Performance { get; set; }
+        public decimal FinancialPerformance { get; set; }
+        public decimal PhysicalPerformance { get; set; }
+        public decimal OtherPerformance { get; set; }
     }
 
     // Element related models
@@ -29,7 +36,13 @@ namespace MEPlatform.Web.Models
         public decimal Weight { get; set; }
         public string? Icon { get; set; }
         public string? Description { get; set; }
+        
+        // Performance metrics
+        public decimal Trend { get; set; }
         public decimal Performance { get; set; }
+        public decimal FinancialPerformance { get; set; }
+        public decimal PhysicalPerformance { get; set; }
+        public decimal OtherPerformance { get; set; }
     }
 
     public class CreateElementViewModel
@@ -70,7 +83,14 @@ namespace MEPlatform.Web.Models
         public string Type { get; set; } = string.Empty;
         public int FrameworkId { get; set; }
         public int? ParentId { get; set; }
+        
+        // Performance metrics
+        public decimal Trend { get; set; }
         public decimal Performance { get; set; }
+        public decimal FinancialPerformance { get; set; }
+        public decimal PhysicalPerformance { get; set; }
+        public decimal OtherPerformance { get; set; }
+        
         public int ChildrenCount { get; set; }
         public int IndicatorsCount { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -88,6 +108,20 @@ namespace MEPlatform.Web.Models
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; }
         public int MeasurementsCount { get; set; }
+        
+        // Performance metrics
+        public decimal Trend { get; set; }
+        public decimal Performance { get; set; }
+        public decimal FinancialPerformance { get; set; }
+        public decimal PhysicalPerformance { get; set; }
+        public decimal OtherPerformance { get; set; }
+        
+        // Additional indicator properties from core entity
+        public decimal? GAGRA { get; set; }
+        public decimal? GAGRR { get; set; }
+        public string? Source { get; set; }
+        public string? IndicatorImpact { get; set; }
+        public int? TargetYear { get; set; }
     }
 
     public class CreateIndicatorViewModel
@@ -148,6 +182,13 @@ namespace MEPlatform.Web.Models
         public int ElementId { get; set; }
         public DateTime CreatedAt { get; set; }
         public int MeasurementsCount { get; set; }
+        
+        // Performance metrics
+        public decimal Trend { get; set; }
+        public decimal Performance { get; set; }
+        public decimal FinancialPerformance { get; set; }
+        public decimal PhysicalPerformance { get; set; }
+        public decimal OtherPerformance { get; set; }
     }
 
     public class IndicatorDetail
@@ -165,6 +206,20 @@ namespace MEPlatform.Web.Models
         public string? ResponsibleParty { get; set; }
         public DateTime CreatedAt { get; set; }
         public int MeasurementsCount { get; set; }
+        
+        // Performance metrics
+        public decimal Trend { get; set; }
+        public decimal Performance { get; set; }
+        public decimal FinancialPerformance { get; set; }
+        public decimal PhysicalPerformance { get; set; }
+        public decimal OtherPerformance { get; set; }
+        
+        // Additional properties from core entity
+        public decimal? GAGRA { get; set; }
+        public decimal? GAGRR { get; set; }
+        public string? Source { get; set; }
+        public string? IndicatorImpact { get; set; }
+        public int? TargetYear { get; set; }
     }
 
     // Statistics models

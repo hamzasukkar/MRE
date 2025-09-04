@@ -149,6 +149,30 @@
                                             <small class="opacity-75">@outcome.Description</small>
                                         </div>
                                     }
+                                    
+                                    <!-- Performance Metrics for Outcome -->
+                                    <div class="mt-2 pt-2 border-top border-light">
+                                        <div class="row text-center">
+                                            <div class="col-3">
+                                                <small class="fw-bold">@outcome.FinancialPerformance.ToString("F1")%</small>
+                                                <div class="small opacity-75">Financial</div>
+                                            </div>
+                                            <div class="col-3">
+                                                <small class="fw-bold">@outcome.PhysicalPerformance.ToString("F1")%</small>
+                                                <div class="small opacity-75">Physical</div>
+                                            </div>
+                                            <div class="col-3">
+                                                <small class="fw-bold">@outcome.Performance.ToString("F1")%</small>
+                                                <div class="small opacity-75">Overall</div>
+                                            </div>
+                                            <div class="col-3">
+                                                <small class="fw-bold @(outcome.Trend >= 0 ? "" : "text-warning")">
+                                                    @(outcome.Trend >= 0 ? "+" : "")@outcome.Trend.ToString("F1")%
+                                                </small>
+                                                <div class="small opacity-75">Trend</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Outputs -->
@@ -185,6 +209,26 @@
                                                     </div>
                                                 }
                                             </div>
+                                            
+                                            <!-- Performance Metrics for Output -->
+                                            <div class="mt-2 pt-2 border-top border-light opacity-75">
+                                                <div class="row text-center">
+                                                    <div class="col-4">
+                                                        <small class="fw-bold">@output.FinancialPerformance.ToString("F1")%</small>
+                                                        <div class="small" style="font-size: 0.7rem;">Financial</div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <small class="fw-bold">@output.PhysicalPerformance.ToString("F1")%</small>
+                                                        <div class="small" style="font-size: 0.7rem;">Physical</div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <small class="fw-bold @(output.Trend >= 0 ? "" : "text-warning")">
+                                                            @(output.Trend >= 0 ? "+" : "")@output.Trend.ToString("F1")%
+                                                        </small>
+                                                        <div class="small" style="font-size: 0.7rem;">Trend</div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <!-- Sub-outputs -->
@@ -216,6 +260,26 @@
                                                                 </button>
                                                             </div>
                                                         }
+                                                    </div>
+                                                    
+                                                    <!-- Performance Metrics for Sub-output -->
+                                                    <div class="mt-1 pt-1 border-top border-light opacity-75">
+                                                        <div class="row text-center">
+                                                            <div class="col-4">
+                                                                <small class="fw-bold">@subOutput.FinancialPerformance.ToString("F1")%</small>
+                                                                <div class="small" style="font-size: 0.65rem;">Financial</div>
+                                                            </div>
+                                                            <div class="col-4">
+                                                                <small class="fw-bold">@subOutput.PhysicalPerformance.ToString("F1")%</small>
+                                                                <div class="small" style="font-size: 0.65rem;">Physical</div>
+                                                            </div>
+                                                            <div class="col-4">
+                                                                <small class="fw-bold @(subOutput.Trend >= 0 ? "" : "text-warning")">
+                                                                    @(subOutput.Trend >= 0 ? "+" : "")@subOutput.Trend.ToString("F1")%
+                                                                </small>
+                                                                <div class="small" style="font-size: 0.65rem;">Trend</div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
 

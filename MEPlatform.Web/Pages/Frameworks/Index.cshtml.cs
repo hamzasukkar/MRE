@@ -55,7 +55,13 @@ namespace MEPlatform.Web.Pages.Frameworks
                         "Governance and Institution Building",
                         "Infrastructure and Environment",
                         "Peace and Security"
-                    }
+                    },
+                    // Performance metrics
+                    Trend = 2.3m,
+                    Performance = 78.5m,
+                    FinancialPerformance = 82.1m,
+                    PhysicalPerformance = 75.8m,
+                    OtherPerformance = 77.2m
                 },
                 new FrameworkSummary
                 {
@@ -76,7 +82,13 @@ namespace MEPlatform.Web.Pages.Frameworks
                         "Monitoring and Evaluation",
                         "Resource Management",
                         "Stakeholder Coordination"
-                    }
+                    },
+                    // Performance metrics
+                    Trend = -1.2m,
+                    Performance = 65.3m,
+                    FinancialPerformance = 68.7m,
+                    PhysicalPerformance = 62.1m,
+                    OtherPerformance = 64.8m
                 },
                 new FrameworkSummary
                 {
@@ -97,7 +109,13 @@ namespace MEPlatform.Web.Pages.Frameworks
                         "Good Health and Well-being (SDG 3)",
                         "Quality Education (SDG 4)",
                         "Gender Equality (SDG 5)"
-                    }
+                    },
+                    // Performance metrics
+                    Trend = 3.7m,
+                    Performance = 82.1m,
+                    FinancialPerformance = 85.4m,
+                    PhysicalPerformance = 79.3m,
+                    OtherPerformance = 81.6m
                 }
             };
         }
