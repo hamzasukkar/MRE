@@ -1,0 +1,202 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Projects.CreateModel
+@{
+    ViewData["Title"] = "Create Project";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="@Url.Page("/Dashboard/Index")">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Page("./Index")">Projects</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-plus-circle me-2"></i>Create New Project
+            </h1>
+        </div>
+        <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Projects
+        </a>
+    </div>
+
+    <!-- Create Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-kanban me-2"></i>Project Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label asp-for="Project.Name" class="form-label">Project Name <span class="text-danger">*</span></label>
+                                <input asp-for="Project.Name" class="form-control" placeholder="Enter project name">
+                                <span asp-validation-for="Project.Name" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Project.Manager" class="form-label">Project Manager</label>
+                                <input asp-for="Project.Manager" class="form-control" placeholder="Manager name">
+                                <span asp-validation-for="Project.Manager" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Project.Description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea asp-for="Project.Description" class="form-control" rows="4" placeholder="Describe the project objectives, activities, and expected outcomes"></textarea>
+                            <span asp-validation-for="Project.Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- Framework and Program -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Project.Framework" class="form-label">M&E Framework <span class="text-danger">*</span></label>
+                                <select asp-for="Project.Framework" class="form-select">
+                                    <option value="">Select Framework</option>
+                                    @foreach (var framework in Model.AvailableFrameworks)
+                                    {
+                                        <option value="@framework">@framework</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Project.Framework" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Project.ProgramId" class="form-label">Program (Optional)</label>
+                                <select asp-for="Project.ProgramId" class="form-select">
+                                    <option value="">No Program</option>
+                                    @foreach (var program in Model.AvailablePrograms)
+                                    {
+                                        <option value="@program.Id">@program.Name (@program.Status)</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Location and Sector -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Project.Region" class="form-label">Region <span class="text-danger">*</span></label>
+                                <select asp-for="Project.Region" class="form-select">
+                                    <option value="">Select Region</option>
+                                    @foreach (var region in Model.AvailableRegions)
+                                    {
+                                        <option value="@region">@region</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Project.Region" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Project.Sector" class="form-label">Sector <span class="text-danger">*</span></label>
+                                <select asp-for="Project.Sector" class="form-select">
+                                    <option value="">Select Sector</option>
+                                    @foreach (var sector in Model.AvailableSectors)
+                                    {
+                                        <option value="@sector">@sector</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Project.Sector" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Dates and Budget -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label asp-for="Project.StartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                <input asp-for="Project.StartDate" class="form-control" type="date">
+                                <span asp-validation-for="Project.StartDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Project.EndDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                                <input asp-for="Project.EndDate" class="form-control" type="date">
+                                <span asp-validation-for="Project.EndDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Project.Budget" class="form-label">Budget (USD)</label>
+                                <input asp-for="Project.Budget" class="form-control" type="number" step="0.01" min="0" placeholder="0.00">
+                                <span asp-validation-for="Project.Budget" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>Create Project
+                            </button>
+                            <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Panel -->
+        <div class="col-lg-4">
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Project Creation Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">Project Basics</h6>
+                    <ul class="small mb-3">
+                        <li><strong>Name:</strong> Use a clear, descriptive project title</li>
+                        <li><strong>Description:</strong> Include objectives, activities, and target beneficiaries</li>
+                        <li><strong>Timeline:</strong> Set realistic start and completion dates</li>
+                        <li><strong>Budget:</strong> Enter total project budget if available</li>
+                    </ul>
+
+                    <h6 class="text-success">Framework Alignment</h6>
+                    <ul class="small mb-3">
+                        <li><strong>SNDV Framework:</strong> National development priorities</li>
+                        <li><strong>Programs Framework:</strong> Program management alignment</li>
+                        <li><strong>SDG Framework:</strong> Sustainable Development Goals</li>
+                    </ul>
+
+                    <h6 class="text-info">Next Steps</h6>
+                    <ul class="small">
+                        <li>After creation, align with framework elements</li>
+                        <li>Add performance indicators for monitoring</li>
+                        <li>Set up data collection schedules</li>
+                        <li>Track progress against targets</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Framework Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>Available Frameworks</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge bg-primary">SNDV Framework</span>
+                        <small class="d-block text-muted">24 elements, 156 indicators</small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-success">Programs Framework</span>
+                        <small class="d-block text-muted">18 elements, 89 indicators</small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-info">SDG Framework</span>
+                        <small class="d-block text-muted">17 elements, 231 indicators</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

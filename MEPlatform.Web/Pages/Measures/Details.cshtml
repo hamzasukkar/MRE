@@ -1,0 +1,441 @@
+@page "{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Measures.DetailsModel
+@{
+    ViewData["Title"] = $"Measure Details - {Model.Measure.Name}";
+}
+
+<div class="container-fluid">
+    <!-- Header with Breadcrumb -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="@Url.Page("/Measures/Index")">Measures</a></li>
+                    <li class="breadcrumb-item active">@Model.Measure.Name</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-graph-up-arrow me-2"></i>@Model.Measure.Name
+                <span class="badge @(Model.Measure.Status switch 
+                {
+                    "Active" => "bg-success",
+                    "Planning" => "bg-info",
+                    "On Hold" => "bg-warning text-dark",
+                    "Completed" => "bg-primary",
+                    "Cancelled" => "bg-danger",
+                    _ => "bg-secondary"
+                }) ms-3">@Model.Measure.Status</span>
+            </h1>
+        </div>
+        <div>
+            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor") || User.IsInRole("ProgramManager"))
+            {
+                <a href="@Url.Page("./Edit", new { id = Model.Measure.Id })" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i>Edit Measure
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Measure Overview Cards -->
+    <div class="row mb-4">
+        <!-- Main Information Card -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Measure Information</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">@Model.Measure.Description</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5">Project:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge bg-primary">@Model.Measure.ProjectName</span>
+                                </dd>
+                                
+                                <dt class="col-sm-5">Indicator:</dt>
+                                <dd class="col-sm-7">@Model.Measure.IndicatorName</dd>
+                                
+                                <dt class="col-sm-5">Measure Type:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge @(Model.Measure.MeasureType switch 
+                                    {
+                                        "Quantitative" => "bg-info",
+                                        "Qualitative" => "bg-warning text-dark",
+                                        "Binary" => "bg-secondary",
+                                        _ => "bg-light text-dark"
+                                    })">@Model.Measure.MeasureType</span>
+                                </dd>
+                                
+                                <dt class="col-sm-5">Unit:</dt>
+                                <dd class="col-sm-7 fw-bold">@Model.Measure.Unit</dd>
+                                
+                                <dt class="col-sm-5">Frequency:</dt>
+                                <dd class="col-sm-7">@Model.Measure.Frequency</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-6">Framework:</dt>
+                                <dd class="col-sm-6">@Model.Measure.Framework</dd>
+                                
+                                <dt class="col-sm-6">Region:</dt>
+                                <dd class="col-sm-6">@Model.Measure.Region</dd>
+                                
+                                <dt class="col-sm-6">Sector:</dt>
+                                <dd class="col-sm-6">@Model.Measure.Sector</dd>
+                                
+                                <dt class="col-sm-6">Responsible:</dt>
+                                <dd class="col-sm-6">@Model.Measure.ResponsiblePerson</dd>
+                                
+                                <dt class="col-sm-6">Last Updated:</dt>
+                                <dd class="col-sm-6">
+                                    @if (Model.Measure.LastUpdated.HasValue)
+                                    {
+                                        @Model.Measure.LastUpdated.Value.ToString("MMM dd, yyyy")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Never</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Data Collection Information -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Data Source</h6>
+                            <p class="mb-3">@Model.Measure.DataSource</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Collection Method</h6>
+                            <p class="mb-3">@Model.Measure.CollectionMethod</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics Card -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Performance Overview</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Achievement Progress -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold">Achievement</span>
+                            <span class="fw-bold text-primary">@Model.Measure.Achievement.ToString("F1")%</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 10px;">
+                            <div class="progress-bar @(Model.Measure.Achievement >= 80 ? "bg-success" : Model.Measure.Achievement >= 60 ? "bg-warning" : "bg-danger")" 
+                                 style="width: @Model.Measure.Achievement%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>Current: @(Model.Measure.CurrentValue?.ToString("N1") ?? "N/A")</span>
+                            <span>Target: @(Model.Measure.Target?.ToString("N1") ?? "N/A")</span>
+                        </div>
+                    </div>
+
+                    <!-- Performance Metrics -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h5 class="text-primary mb-0">@Model.Measure.FinancialPerformance.ToString("F1")%</h5>
+                                <small class="text-muted">Financial</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h5 class="text-success mb-0">@Model.Measure.PhysicalPerformance.ToString("F1")%</h5>
+                                <small class="text-muted">Physical</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="@(Model.Measure.Trend >= 0 ? "text-success" : "text-danger") mb-0">
+                                @(Model.Measure.Trend >= 0 ? "+" : "")@Model.Measure.Trend.ToString("F1")%
+                            </h5>
+                            <small class="text-muted">Trend</small>
+                        </div>
+                    </div>
+
+                    <!-- Data Quality -->
+                    <div class="mt-4">
+                        <h6 class="text-muted mb-3">Data Quality & Verification</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Quality Level:</span>
+                            <span class="badge @(Model.Measure.DataQuality switch 
+                            {
+                                "High" => "bg-success",
+                                "Medium" => "bg-warning text-dark",
+                                "Low" => "bg-danger",
+                                _ => "bg-secondary"
+                            })">@Model.Measure.DataQuality</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Verification Status:</span>
+                            @if (Model.Measure.IsVerified)
+                            {
+                                <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
+                            }
+                            else
+                            {
+                                <span class="text-warning"><i class="bi bi-exclamation-circle-fill me-1"></i>Pending</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Quick Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h5 class="text-info mb-0">@(Model.Measure.BaselineValue?.ToString("N1") ?? "N/A")</h5>
+                                <small class="text-muted">Baseline</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-warning mb-0">@Model.HistoricalData.Count</h5>
+                            <small class="text-muted">Data Points</small>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Created:</span>
+                            <span>@Model.Measure.CreatedAt.ToString("MMM yyyy")</span>
+                        </div>
+                        @if (Model.HistoricalData.Any())
+                        {
+                            var improvement = Model.HistoricalData.Count > 1 
+                                ? ((Model.HistoricalData.Last().Value - Model.HistoricalData.First().Value) / Model.HistoricalData.First().Value * 100)
+                                : 0;
+                            <div class="d-flex justify-content-between">
+                                <span>Improvement:</span>
+                                <span class="@(improvement >= 0 ? "text-success" : "text-danger")">
+                                    @(improvement >= 0 ? "+" : "")@improvement.ToString("F1")%
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Data Section -->
+    @if (Model.HistoricalData.Any())
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Historical Data</h5>
+                <span class="badge bg-info">@Model.HistoricalData.Count Data Points</span>
+            </div>
+            <div class="card-body">
+                <!-- Progress Chart Visual -->
+                <div class="mb-4">
+                    <canvas id="progressChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover" id="historicalDataTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Value</th>
+                                <th>Performance Score</th>
+                                <th>Progress</th>
+                                <th>Verification</th>
+                                <th>Recorded By</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var dataPoint in Model.HistoricalData.OrderByDescending(d => d.RecordedDate))
+                            {
+                                <tr>
+                                    <td class="fw-bold">@dataPoint.RecordedDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <span class="fw-bold text-primary">@dataPoint.Value.ToString("N1")</span>
+                                        <small class="text-muted">@Model.Measure.Unit</small>
+                                    </td>
+                                    <td>
+                                        @if (dataPoint.PerformanceScore.HasValue)
+                                        {
+                                            <span class="badge @(dataPoint.PerformanceScore >= 80 ? "bg-success" : dataPoint.PerformanceScore >= 60 ? "bg-warning" : "bg-danger")">
+                                                @dataPoint.PerformanceScore.Value.ToString("F1")%
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (Model.Measure.Target.HasValue)
+                                        {
+                                            var progress = Math.Min((dataPoint.Value / Model.Measure.Target.Value) * 100, 100);
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2 small">@progress.ToString("F1")%</span>
+                                                <div class="progress flex-fill" style="height: 4px; width: 60px;">
+                                                    <div class="progress-bar @(progress >= 90 ? "bg-success" : progress >= 70 ? "bg-warning" : "bg-danger")" 
+                                                         style="width: @progress%"></div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (dataPoint.IsVerified)
+                                        {
+                                            <i class="bi bi-check-circle-fill text-success" title="Verified by @dataPoint.VerificationSource"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-exclamation-circle-fill text-warning" title="Pending Verification"></i>
+                                        }
+                                    </td>
+                                    <td class="small">@dataPoint.RecordedBy</td>
+                                    <td class="small">
+                                        @if (!string.IsNullOrEmpty(dataPoint.Note))
+                                        {
+                                            @if (dataPoint.Note.Length > 50)
+                                            {
+                                                <span title="@dataPoint.Note">@dataPoint.Note.Substring(0, 50)...</span>
+                                            }
+                                            else
+                                            {
+                                                @dataPoint.Note
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No notes</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-graph-up fs-1 text-muted"></i>
+                <h5 class="text-muted mt-3">No Historical Data</h5>
+                <p class="text-muted">No data points have been recorded for this measure yet.</p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables for historical data
+            $('#historicalDataTable').DataTable({
+                "pageLength": 10,
+                "order": [[0, "desc"]], // Sort by date descending
+                "columnDefs": [
+                    { "orderable": false, "targets": [4, 6] } // Disable sorting on verification and notes
+                ]
+            });
+
+            // Create progress chart if historical data exists
+            @if (Model.HistoricalData.Any())
+            {
+                <text>
+                var chartData = {
+                    labels: [@Html.Raw(string.Join(",", Model.HistoricalData.OrderBy(d => d.RecordedDate).Select(d => $"'{d.RecordedDate:MMM yyyy}'")))],
+                    datasets: [{
+                        label: 'Value (@Model.Measure.Unit)',
+                        data: [@string.Join(",", Model.HistoricalData.OrderBy(d => d.RecordedDate).Select(d => d.Value))],
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                };
+
+                var targetValue = @(Model.Measure.Target ?? 0);
+                if (targetValue > 0) {
+                    chartData.datasets.push({
+                        label: 'Target',
+                        data: Array(chartData.labels.length).fill(targetValue),
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        borderDash: [5, 5],
+                        fill: false
+                    });
+                }
+
+                var ctx = document.getElementById('progressChart').getContext('2d');
+                var progressChart = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: '@Model.Measure.Unit'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time Period'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Progress Over Time'
+                            },
+                            legend: {
+                                display: true
+                            }
+                        }
+                    }
+                });
+                </text>
+            }
+
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+        });
+    </script>
+}

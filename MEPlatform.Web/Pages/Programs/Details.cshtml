@@ -1,0 +1,343 @@
+@page "{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Programs.DetailsModel
+@{
+    ViewData["Title"] = $"Program Details - {Model.Program.Name}";
+}
+
+<div class="container-fluid">
+    <!-- Header with Breadcrumb -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="@Url.Page("/Programs/Index")">Programs</a></li>
+                    <li class="breadcrumb-item active">@Model.Program.Name</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-folder-open me-2"></i>@Model.Program.Name
+                <span class="badge @(Model.Program.Status switch 
+                {
+                    "Active" => "bg-success",
+                    "Planning" => "bg-info",
+                    "On Hold" => "bg-warning text-dark",
+                    "Completed" => "bg-primary",
+                    "Cancelled" => "bg-danger",
+                    _ => "bg-secondary"
+                }) ms-3">@Model.Program.Status</span>
+            </h1>
+        </div>
+        <div>
+            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+            {
+                <a href="@Url.Page("./Edit", new { id = Model.Program.Id })" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i>Edit Program
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Program Overview Cards -->
+    <div class="row mb-4">
+        <!-- Main Information Card -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Program Information</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">@Model.Program.Description</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5">Framework:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge bg-primary">@Model.Program.Framework</span>
+                                </dd>
+                                
+                                <dt class="col-sm-5">Organization:</dt>
+                                <dd class="col-sm-7">@Model.Program.ResponsibleOrganization</dd>
+                                
+                                <dt class="col-sm-5">Budget:</dt>
+                                <dd class="col-sm-7 fw-bold text-success">@Model.Program.Budget?.ToString("C0")</dd>
+                                
+                                <dt class="col-sm-5">Timeline:</dt>
+                                <dd class="col-sm-7">
+                                    @Model.Program.StartDate.ToString("MMM dd, yyyy") - 
+                                    @Model.Program.EndDate.ToString("MMM dd, yyyy")
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-6">Total Beneficiaries:</dt>
+                                <dd class="col-sm-6 fw-bold">@Model.Program.TotalBeneficiaries.ToString("N0")</dd>
+                                
+                                <dt class="col-sm-6">Direct:</dt>
+                                <dd class="col-sm-6">@Model.Program.DirectBeneficiaries.ToString("N0")</dd>
+                                
+                                <dt class="col-sm-6">Indirect:</dt>
+                                <dd class="col-sm-6">@Model.Program.IndirectBeneficiaries.ToString("N0")</dd>
+                                
+                                <dt class="col-sm-6">Last Updated:</dt>
+                                <dd class="col-sm-6">@Model.Program.UpdatedAt.ToString("MMM dd, yyyy")</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Sectors and Regions -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Sectors</h6>
+                            @foreach (var sector in Model.Program.Sectors)
+                            {
+                                <span class="badge bg-light text-dark me-1 mb-1">@sector</span>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Regions</h6>
+                            @foreach (var region in Model.Program.Regions)
+                            {
+                                <span class="badge bg-outline-secondary me-1 mb-1">@region</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics Card -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Performance Overview</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Overall Progress -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold">Overall Progress</span>
+                            <span class="fw-bold text-primary">@Model.Program.OverallProgress?.ToString("F1")%</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 10px;">
+                            <div class="progress-bar @((Model.Program.OverallProgress ?? 0) >= 75 ? "bg-success" : (Model.Program.OverallProgress ?? 0) >= 50 ? "bg-warning" : "bg-danger")" 
+                                 style="width: @(Model.Program.OverallProgress ?? 0)%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Metrics -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h5 class="text-primary mb-0">@Model.Program.FinancialPerformance.ToString("F1")%</h5>
+                                <small class="text-muted">Financial</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h5 class="text-success mb-0">@Model.Program.PhysicalPerformance.ToString("F1")%</h5>
+                                <small class="text-muted">Physical</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="@(Model.Program.Trend >= 0 ? "text-success" : "text-danger") mb-0">
+                                @(Model.Program.Trend >= 0 ? "+" : "")@Model.Program.Trend.ToString("F1")%
+                            </h5>
+                            <small class="text-muted">Trend</small>
+                        </div>
+                    </div>
+
+                    <!-- Project Statistics -->
+                    <div class="mt-4">
+                        <h6 class="text-muted mb-3">Project Statistics</h6>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h5 class="text-info mb-0">@Model.Program.ProjectsCount</h5>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="text-success mb-0">@Model.Program.CompletedProjects</h5>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        <div class="row text-center mt-3">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h5 class="text-primary mb-0">@Model.Program.ActiveProjects</h5>
+                                    <small class="text-muted">Active</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="text-warning mb-0">@Model.Program.OnHoldProjects</h5>
+                                <small class="text-muted">On Hold</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Section -->
+    @if (Model.Projects.Any())
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-kanban me-2"></i>Program Projects</h5>
+                <a href="@Url.Page("/Projects/Index", new { programId = Model.Program.Id })" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-eye me-1"></i>View All Projects
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Region</th>
+                                <th>Budget</th>
+                                <th>Financial Performance</th>
+                                <th>Physical Performance</th>
+                                <th>Timeline</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var project in Model.Projects)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">@project.Name</div>
+                                        <small class="text-muted">@project.Description</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge @(project.Status switch 
+                                        {
+                                            "Active" => "bg-success",
+                                            "Planning" => "bg-info",
+                                            "On Hold" => "bg-warning text-dark",
+                                            "Completed" => "bg-primary",
+                                            "Cancelled" => "bg-danger",
+                                            _ => "bg-secondary"
+                                        })">@project.Status</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2 fw-bold">@project.Progress.ToString("F1")%</span>
+                                            <div class="progress flex-fill" style="height: 4px; width: 60px;">
+                                                <div class="progress-bar @(project.Progress >= 75 ? "bg-success" : project.Progress >= 50 ? "bg-warning" : "bg-danger")" 
+                                                     style="width: @project.Progress%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@project.Region</td>
+                                    <td class="fw-bold">@project.Budget?.ToString("C0")</td>
+                                    <td class="text-center">
+                                        <span class="fw-bold text-primary">@project.FinancialPerformance.ToString("F1")%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold text-success">@project.PhysicalPerformance.ToString("F1")%</span>
+                                    </td>
+                                    <td class="small">
+                                        @project.StartDate.ToString("MMM yyyy") - 
+                                        @project.EndDate.ToString("MMM yyyy")
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Page("/Projects/Details", new { id = project.Id })" 
+                                           class="btn btn-outline-primary btn-sm" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Key Indicators Section -->
+    @if (Model.KeyIndicators.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Key Performance Indicators</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var indicator in Model.KeyIndicators)
+                    {
+                        <div class="col-md-6 mb-4">
+                            <div class="border rounded p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="mb-0">@indicator.Name</h6>
+                                    <span class="badge @(indicator.Performance >= 80 ? "bg-success" : indicator.Performance >= 60 ? "bg-warning" : "bg-danger")">
+                                        @indicator.Performance.ToString("F1")%
+                                    </span>
+                                </div>
+                                <p class="text-muted small mb-3">@indicator.Description</p>
+                                
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="fw-bold">@(indicator.CurrentValue?.ToString("N1") ?? "N/A")</div>
+                                        <small class="text-muted">Current</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold">@(indicator.Target?.ToString("N1") ?? "N/A")</div>
+                                        <small class="text-muted">Target</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold @(indicator.Trend >= 0 ? "text-success" : "text-danger")">
+                                            @(indicator.Trend >= 0 ? "+" : "")@indicator.Trend.ToString("F1")%
+                                        </div>
+                                        <small class="text-muted">Trend</small>
+                                    </div>
+                                </div>
+
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <div class="fw-bold text-primary">@indicator.FinancialPerformance.ToString("F1")%</div>
+                                        <small class="text-muted">Financial</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-bold text-success">@indicator.PhysicalPerformance.ToString("F1")%</div>
+                                        <small class="text-muted">Physical</small>
+                                    </div>
+                                </div>
+
+                                @if (indicator.Target.HasValue && indicator.CurrentValue.HasValue)
+                                {
+                                    var progress = Math.Min((indicator.CurrentValue.Value / indicator.Target.Value) * 100, 100);
+                                    <div class="progress mt-3" style="height: 6px;">
+                                        <div class="progress-bar @(progress >= 90 ? "bg-success" : progress >= 70 ? "bg-warning" : "bg-danger")" 
+                                             style="width: @progress%"></div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+        });
+    </script>
+}

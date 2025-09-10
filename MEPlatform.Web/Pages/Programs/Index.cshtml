@@ -59,6 +59,33 @@
                         </div>
                     </div>
 
+                    <!-- Performance Metrics -->
+                    <div class="mb-3">
+                        <h6 class="text-muted small mb-2">PERFORMANCE METRICS</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="small">
+                                    <div class="fw-bold text-primary">@program.FinancialPerformance.ToString("F1")%</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Financial</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small">
+                                    <div class="fw-bold text-success">@program.PhysicalPerformance.ToString("F1")%</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Physical</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small">
+                                    <div class="fw-bold @(program.Trend >= 0 ? "text-success" : "text-danger")">
+                                        @(program.Trend >= 0 ? "+" : "")@program.Trend.ToString("F1")%
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Trend</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Progress Bar -->
                     @if (program.OverallProgress.HasValue)
                     {
@@ -148,12 +175,18 @@
                            class="btn btn-outline-info btn-sm flex-fill">
                             <i class="bi bi-kanban me-1"></i>Projects
                         </a>
-                        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor") || User.IsInRole("ProgramManager"))
+                        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
                         {
-                            <a href="@Url.Page("./Edit", new { id = program.Id })" 
-                               class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-pencil"></i>
-                            </a>
+                            <div class="btn-group">
+                                <a href="@Url.Page("./Edit", new { id = program.Id })" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal-@program.Id">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         }
                     </div>
                 </div>
@@ -168,7 +201,7 @@
         <i class="bi bi-folder" style="font-size: 4rem; color: #ccc;"></i>
         <h4 class="mt-3 text-muted">No programs found</h4>
         <p class="text-muted">Get started by creating your first program.</p>
-        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor") || User.IsInRole("ProgramManager"))
+        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
         {
             <a href="@Url.Page("./Create")" class="btn btn-primary mt-3">
                 <i class="bi bi-plus"></i> Create Your First Program
@@ -218,3 +251,43 @@
         </div>
     </div>
 }
+
+<!-- Delete Confirmation Modals -->
+@foreach (var program in Model.Programs)
+{
+    <div class="modal fade" id="deleteModal-@program.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete Program
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">
+                        Are you sure you want to delete the program <strong>"@program.Name"</strong>?
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone and will:
+                        <ul class="mb-0 mt-2">
+                            <li>Remove @program.ProjectsCount project(s) from this program</li>
+                            <li>Delete all associated monitoring data</li>
+                            <li>Remove performance tracking history</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@program.Id">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>Yes, Delete Program
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+</div>

@@ -68,8 +68,8 @@
                                 {
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="@Url.Page("/Frameworks/Create")">Create Framework</a></li>
-                                    <li><a class="dropdown-item" href="@Url.Page("/Frameworks/Elements")">Manage Elements</a></li>
-                                    <li><a class="dropdown-item" href="@Url.Page("/Frameworks/Indicators")">Manage Indicators</a></li>
+                                    <li><a class="dropdown-item" href="@Url.Page("/Frameworks/Index")">Manage Elements</a></li>
+                                    <li><a class="dropdown-item" href="@Url.Page("/Frameworks/Indicators/Manage")">Manage Indicators</a></li>
                                 }
                             </ul>
                         </li>
@@ -84,6 +84,19 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="@Url.Page("/Programs/Create")">Create Program</a></li>
                                     <li><a class="dropdown-item" href="@Url.Page("/Programs/Projects/Create")">Create Project</a></li>
+                                }
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-graph-up-arrow me-1"></i>Measures
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="@Url.Page("/Measures/Index")">All Measures</a></li>
+                                @if (AuthService.IsInRole("SuperAdministrator") || AuthService.IsInRole("Supervisor") || AuthService.IsInRole("ProgramManager"))
+                                {
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="@Url.Page("/Measures/Create")">Create Measure</a></li>
                                 }
                             </ul>
                         </li>

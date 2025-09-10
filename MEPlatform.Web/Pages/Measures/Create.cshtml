@@ -1,0 +1,285 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "SuperAdministrator,Supervisor,ProgramManager")]
+@model MEPlatform.Web.Pages.Measures.CreateModel
+@{
+    ViewData["Title"] = "Create New Measure";
+}
+
+<div class="container-fluid">
+    <!-- Header with Breadcrumb -->
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="@Url.Page("/Measures/Index")">Measures</a></li>
+                <li class="breadcrumb-item active">Create New Measure</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-0">
+            <i class="bi bi-plus-circle me-2"></i>Create New Measure
+        </h1>
+        <p class="text-muted mb-0">Add a new measurement indicator to track project performance</p>
+    </div>
+
+    <!-- Create Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-form me-2"></i>Measure Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <h6><i class="bi bi-exclamation-triangle me-2"></i>Please correct the following errors:</h6>
+                                <ul class="mb-0">
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <!-- Basic Information -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.Name" class="form-label">Measure Name <span class="text-danger">*</span></label>
+                                    <input asp-for="Measure.Name" class="form-control" placeholder="Enter measure name">
+                                    <span asp-validation-for="Measure.Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.Unit" class="form-label">Unit <span class="text-danger">*</span></label>
+                                    <input asp-for="Measure.Unit" class="form-control" placeholder="e.g., facilities, persons, %">
+                                    <span asp-validation-for="Measure.Unit" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Measure.Description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea asp-for="Measure.Description" class="form-control" rows="3" 
+                                      placeholder="Detailed description of what this measure tracks"></textarea>
+                            <span asp-validation-for="Measure.Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- Project and Indicator Assignment -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.ProjectId" class="form-label">Project <span class="text-danger">*</span></label>
+                                    <select asp-for="Measure.ProjectId" class="form-select">
+                                        <option value="">Select a project</option>
+                                        @foreach (var project in Model.Projects)
+                                        {
+                                            <option value="@project.Id">@project.Name (@project.Region - @project.Sector)</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Measure.ProjectId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.IndicatorId" class="form-label">Indicator <span class="text-danger">*</span></label>
+                                    <select asp-for="Measure.IndicatorId" class="form-select">
+                                        <option value="">Select an indicator</option>
+                                        @foreach (var indicator in Model.Indicators)
+                                        {
+                                            <option value="@indicator.Id">@indicator.Name (@indicator.Unit)</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Measure.IndicatorId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Measure Configuration -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.MeasureType" class="form-label">Measure Type <span class="text-danger">*</span></label>
+                                    <select asp-for="Measure.MeasureType" class="form-select">
+                                        @foreach (var type in Model.MeasureTypes)
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Measure.MeasureType" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.Frequency" class="form-label">Collection Frequency <span class="text-danger">*</span></label>
+                                    <select asp-for="Measure.Frequency" class="form-select">
+                                        @foreach (var frequency in Model.Frequencies)
+                                        {
+                                            <option value="@frequency">@frequency</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Measure.Frequency" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.Status" class="form-label">Status</label>
+                                    <select asp-for="Measure.Status" class="form-select">
+                                        <option value="Active">Active</option>
+                                        <option value="Planning">Planning</option>
+                                        <option value="On Hold">On Hold</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Collection Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.DataSource" class="form-label">Data Source <span class="text-danger">*</span></label>
+                                    <input asp-for="Measure.DataSource" class="form-control" 
+                                           placeholder="e.g., Ministry records, Field surveys">
+                                    <span asp-validation-for="Measure.DataSource" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.CollectionMethod" class="form-label">Collection Method <span class="text-danger">*</span></label>
+                                    <input asp-for="Measure.CollectionMethod" class="form-control" 
+                                           placeholder="e.g., Field verification, Reporting system">
+                                    <span asp-validation-for="Measure.CollectionMethod" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Target and Baseline Values -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.Target" class="form-label">Target Value</label>
+                                    <input asp-for="Measure.Target" class="form-control" type="number" step="0.01" 
+                                           placeholder="Target to achieve">
+                                    <span asp-validation-for="Measure.Target" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.BaselineValue" class="form-label">Baseline Value</label>
+                                    <input asp-for="Measure.BaselineValue" class="form-control" type="number" step="0.01" 
+                                           placeholder="Starting/baseline value">
+                                    <span asp-validation-for="Measure.BaselineValue" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Measure.ResponsiblePerson" class="form-label">Responsible Person</label>
+                                    <input asp-for="Measure.ResponsiblePerson" class="form-control" 
+                                           placeholder="Person responsible for data collection">
+                                    <span asp-validation-for="Measure.ResponsiblePerson" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Back to Measures
+                            </a>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>Create Measure
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Panel -->
+        <div class="col-lg-4">
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Measure Types Guide</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">Quantitative</h6>
+                        <p class="small mb-2">Numerical measurements that can be counted or measured.</p>
+                        <p class="small text-muted">Examples: Number of facilities, Amount of funding, Percentage completed</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-warning">Qualitative</h6>
+                        <p class="small mb-2">Descriptive measures based on quality or characteristics.</p>
+                        <p class="small text-muted">Examples: Service quality rating, Satisfaction level, Assessment scores</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-secondary">Binary</h6>
+                        <p class="small mb-2">Yes/No or completed/not completed measures.</p>
+                        <p class="small text-muted">Examples: Training completed, System operational, Certification achieved</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-light mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-clock me-2"></i>Collection Frequency</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><strong>Weekly:</strong> High-frequency monitoring for critical indicators</li>
+                        <li class="mb-2"><strong>Monthly:</strong> Regular tracking of operational metrics</li>
+                        <li class="mb-2"><strong>Quarterly:</strong> Standard reporting for most indicators</li>
+                        <li class="mb-2"><strong>Semi-annually:</strong> Mid-term reviews and assessments</li>
+                        <li class="mb-2"><strong>Annually:</strong> Long-term outcome measures</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Form validation and UX improvements
+            $('form').on('submit', function() {
+                $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-1"></i>Creating...');
+            });
+
+            // Auto-populate related fields based on selections
+            $('#Measure_ProjectId').on('change', function() {
+                var selectedProject = $(this).val();
+                // Could filter indicators based on project if needed
+            });
+
+            // Dynamic help text based on measure type
+            $('#Measure_MeasureType').on('change', function() {
+                var selectedType = $(this).val();
+                updateHelpText(selectedType);
+            });
+
+            function updateHelpText(measureType) {
+                var helpTexts = {
+                    'Quantitative': 'Enter numerical values. Target and baseline should be specific numbers.',
+                    'Qualitative': 'Use standardized scales or assessment criteria. Consider rating scales 1-5 or 1-10.',
+                    'Binary': 'Use 1 for Yes/Completed and 0 for No/Not Completed. Target is typically 1 (100%).'
+                };
+                
+                // Update help text if help element exists
+                var helpElement = $('#measureTypeHelp');
+                if (helpElement.length === 0) {
+                    $('#Measure_MeasureType').after('<small id="measureTypeHelp" class="form-text text-muted"></small>');
+                    helpElement = $('#measureTypeHelp');
+                }
+                helpElement.text(helpTexts[measureType] || '');
+            }
+        });
+    </script>
+}

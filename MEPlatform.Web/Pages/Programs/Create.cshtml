@@ -1,0 +1,174 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Programs.CreateModel
+@{
+    ViewData["Title"] = "Create Program";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="@Url.Page("/Dashboard/Index")">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Page("./Index")">Programs</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-plus-circle me-2"></i>Create New Program
+            </h1>
+        </div>
+        <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Programs
+        </a>
+    </div>
+
+    <!-- Create Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Program Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Program.Name" class="form-label">Program Name <span class="text-danger">*</span></label>
+                                <input asp-for="Program.Name" class="form-control" placeholder="Enter program name">
+                                <span asp-validation-for="Program.Name" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Program.Manager" class="form-label">Program Manager</label>
+                                <input asp-for="Program.Manager" class="form-control" placeholder="Enter manager name">
+                                <span asp-validation-for="Program.Manager" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Program.Description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea asp-for="Program.Description" class="form-control" rows="4" placeholder="Describe the program objectives and activities"></textarea>
+                            <span asp-validation-for="Program.Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- Dates and Budget -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Program.StartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                <input asp-for="Program.StartDate" class="form-control" type="date">
+                                <span asp-validation-for="Program.StartDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Program.EndDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                                <input asp-for="Program.EndDate" class="form-control" type="date">
+                                <span asp-validation-for="Program.EndDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Program.Budget" class="form-label">Budget (USD)</label>
+                                <input asp-for="Program.Budget" class="form-control" type="number" step="0.01" min="0" placeholder="0.00">
+                                <span asp-validation-for="Program.Budget" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Program.Donor" class="form-label">Donor/Funding Organization</label>
+                                <input asp-for="Program.Donor" class="form-control" placeholder="Enter donor name">
+                                <span asp-validation-for="Program.Donor" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Sectors Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Target Sectors</label>
+                            <div class="row">
+                                @for (int i = 0; i < Model.AvailableSectors.Count; i++)
+                                {
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="Program.SelectedSectors" value="@Model.AvailableSectors[i]" id="sector-@i">
+                                            <label class="form-check-label" for="sector-@i">
+                                                @Model.AvailableSectors[i]
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Regions Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Target Regions</label>
+                            <div class="row">
+                                @for (int i = 0; i < Model.AvailableRegions.Count; i++)
+                                {
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="Program.SelectedRegions" value="@Model.AvailableRegions[i]" id="region-@i">
+                                            <label class="form-check-label" for="region-@i">
+                                                @Model.AvailableRegions[i]
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>Create Program
+                            </button>
+                            <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Panel -->
+        <div class="col-lg-4">
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Program Creation Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">Program Components</h6>
+                    <ul class="small mb-3">
+                        <li><strong>Name:</strong> Choose a clear, descriptive program name</li>
+                        <li><strong>Description:</strong> Include objectives, target beneficiaries, and key activities</li>
+                        <li><strong>Timeline:</strong> Set realistic start and end dates</li>
+                        <li><strong>Budget:</strong> Enter total program budget if available</li>
+                    </ul>
+
+                    <h6 class="text-success">Sectors & Regions</h6>
+                    <ul class="small mb-3">
+                        <li>Select all relevant sectors the program will address</li>
+                        <li>Choose target regions for program implementation</li>
+                        <li>Multiple selections help with monitoring and reporting</li>
+                    </ul>
+
+                    <h6 class="text-info">Next Steps</h6>
+                    <ul class="small">
+                        <li>After creation, add projects to the program</li>
+                        <li>Align projects with M&E frameworks</li>
+                        <li>Set up monitoring indicators</li>
+                        <li>Track progress and performance metrics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

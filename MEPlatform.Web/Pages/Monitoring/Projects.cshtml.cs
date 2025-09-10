@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MEPlatform.Web.Services;
+using MEPlatform.Web.Models;
 
 namespace MEPlatform.Web.Pages.Monitoring
 {
@@ -90,7 +91,10 @@ namespace MEPlatform.Web.Pages.Monitoring
                     Region = "Damascus",
                     Sector = "Health",
                     StartDate = new DateTime(2024, 1, 15),
-                    EndDate = new DateTime(2025, 6, 30)
+                    EndDate = new DateTime(2025, 6, 30),
+                    FinancialPerformance = 78.1m,
+                    PhysicalPerformance = 72.3m,
+                    Trend = 2.8m
                 },
                 new ProjectMonitoringItem
                 {
@@ -103,7 +107,10 @@ namespace MEPlatform.Web.Pages.Monitoring
                     Region = "Aleppo",
                     Sector = "Education",
                     StartDate = new DateTime(2024, 2, 1),
-                    EndDate = new DateTime(2025, 12, 31)
+                    EndDate = new DateTime(2025, 12, 31),
+                    FinancialPerformance = 65.4m,
+                    PhysicalPerformance = 60.2m,
+                    Trend = 1.5m
                 },
                 new ProjectMonitoringItem
                 {
@@ -116,7 +123,10 @@ namespace MEPlatform.Web.Pages.Monitoring
                     Region = "Homs",
                     Sector = "Water & Sanitation",
                     StartDate = new DateTime(2024, 3, 1),
-                    EndDate = new DateTime(2025, 8, 15)
+                    EndDate = new DateTime(2025, 8, 15),
+                    FinancialPerformance = 42.3m,
+                    PhysicalPerformance = 47.7m,
+                    Trend = -1.2m
                 },
                 new ProjectMonitoringItem
                 {
@@ -129,7 +139,10 @@ namespace MEPlatform.Web.Pages.Monitoring
                     Region = "Daraa",
                     Sector = "Agriculture",
                     StartDate = new DateTime(2023, 9, 1),
-                    EndDate = new DateTime(2025, 3, 31)
+                    EndDate = new DateTime(2025, 3, 31),
+                    FinancialPerformance = 89.2m,
+                    PhysicalPerformance = 87.8m,
+                    Trend = 3.7m
                 },
                 new ProjectMonitoringItem
                 {
@@ -142,7 +155,10 @@ namespace MEPlatform.Web.Pages.Monitoring
                     Region = "Latakia",
                     Sector = "Economic Development",
                     StartDate = new DateTime(2025, 1, 1),
-                    EndDate = new DateTime(2026, 12, 31)
+                    EndDate = new DateTime(2026, 12, 31),
+                    FinancialPerformance = 18.4m,
+                    PhysicalPerformance = 11.6m,
+                    Trend = 0.8m
                 },
                 new ProjectMonitoringItem
                 {
@@ -155,7 +171,10 @@ namespace MEPlatform.Web.Pages.Monitoring
                     Region = "Damascus",
                     Sector = "Social Infrastructure",
                     StartDate = new DateTime(2023, 6, 1),
-                    EndDate = new DateTime(2024, 11, 30)
+                    EndDate = new DateTime(2024, 11, 30),
+                    FinancialPerformance = 98.7m,
+                    PhysicalPerformance = 100.0m,
+                    Trend = 0.0m
                 },
                 new ProjectMonitoringItem
                 {
@@ -168,23 +187,12 @@ namespace MEPlatform.Web.Pages.Monitoring
                     Region = "Aleppo",
                     Sector = "Youth & Social Development",
                     StartDate = new DateTime(2024, 4, 1),
-                    EndDate = new DateTime(2025, 10, 31)
+                    EndDate = new DateTime(2025, 10, 31),
+                    FinancialPerformance = 54.8m,
+                    PhysicalPerformance = 49.8m,
+                    Trend = 2.1m
                 }
             };
         }
-    }
-
-    public class ProjectMonitoringItem
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Framework { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public decimal Progress { get; set; }
-        public string Region { get; set; } = string.Empty;
-        public string Sector { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
     }
 }

@@ -1,0 +1,293 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Frameworks.Indicators.ManageModel
+@{
+    ViewData["Title"] = "Manage Indicators";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3"><i class="bi bi-speedometer2 me-2"></i>Manage Indicators</h1>
+            <p class="text-muted mb-0">Overview and management of all indicators across frameworks</p>
+        </div>
+        <div>
+            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+            {
+                <a href="@Url.Page("/Frameworks/Index")" class="btn btn-outline-primary">
+                    <i class="bi bi-plus"></i> Add New Indicator
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-funnel me-2"></i>Filters</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="frameworkId" class="form-label">Framework</label>
+                    <select asp-for="FrameworkId" class="form-select">
+                        <option value="">All Frameworks</option>
+                        @foreach (var framework in Model.Frameworks)
+                        {
+                            <option value="@framework.Id">@framework.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="search" class="form-label">Search</label>
+                    <input asp-for="Search" class="form-control" placeholder="Search indicator name or description...">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Filter</button>
+                    <a href="@Url.Page("./Manage")" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Indicators Overview Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">@Model.Indicators.Count</h4>
+                    <small>Total Indicators</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">@Model.Indicators.Where(i => i.Performance >= 80).Count()</h4>
+                    <small>High Performing</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">@Model.Indicators.Where(i => i.Performance >= 60 && i.Performance < 80).Count()</h4>
+                    <small>Moderate Performance</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">@Model.Indicators.Where(i => i.Performance < 60).Count()</h4>
+                    <small>Low Performance</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicators Table -->
+    @if (Model.Indicators.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-table me-2"></i>Indicators List</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Indicator Name</th>
+                                <th>Framework</th>
+                                <th>Element</th>
+                                <th>Current/Target</th>
+                                <th>Financial Performance</th>
+                                <th>Physical Performance</th>
+                                <th>Trend</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var indicator in Model.Indicators.OrderBy(i => Model.Elements.ContainsKey(i.ElementId) ? Model.Elements[i.ElementId].FrameworkId : 0).ThenBy(i => i.Name))
+                            {
+                                var element = Model.Elements.ContainsKey(indicator.ElementId) ? Model.Elements[indicator.ElementId] : null;
+                                var framework = element != null ? Model.Frameworks.FirstOrDefault(f => f.Id == element.FrameworkId) : null;
+                                
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">@indicator.Name</div>
+                                        @if (!string.IsNullOrEmpty(indicator.Description))
+                                        {
+                                            <small class="text-muted">@indicator.Description</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (framework != null)
+                                        {
+                                            <span class="badge bg-@(framework.Type == "SNDV" ? "primary" : framework.Type == "Programs" ? "success" : "info")">
+                                                @framework.Name
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (element != null)
+                                        {
+                                            <div class="small">
+                                                <span class="badge bg-@(element.Type == "Outcome" ? "primary" : element.Type == "Output" ? "success" : "info")">
+                                                    @element.Type
+                                                </span>
+                                                <div class="mt-1">@element.Name</div>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">
+                                            @(indicator.CurrentValue?.ToString("N1") ?? "N/A") / @(indicator.Target?.ToString("N1") ?? "N/A")
+                                            @if (!string.IsNullOrEmpty(indicator.Unit)) { <small class="text-muted">@indicator.Unit</small> }
+                                        </div>
+                                        @if (indicator.Target.HasValue && indicator.CurrentValue.HasValue)
+                                        {
+                                            var progress = Math.Min((indicator.CurrentValue.Value / indicator.Target.Value) * 100, 100);
+                                            <div class="progress mt-1" style="height: 4px;">
+                                                <div class="progress-bar bg-@(progress >= 90 ? "success" : progress >= 70 ? "warning" : "danger")" style="width: @progress%"></div>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold text-primary">@indicator.FinancialPerformance.ToString("F1")%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold text-success">@indicator.PhysicalPerformance.ToString("F1")%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold @(indicator.Trend >= 0 ? "text-success" : "text-danger")">
+                                            @(indicator.Trend >= 0 ? "+" : "")@indicator.Trend.ToString("F1")%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <a href="@Url.Page("./Index", new { elementId = indicator.ElementId })" 
+                                               class="btn btn-outline-primary btn-sm" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                                            {
+                                                <a href="@Url.Page("./Edit", new { id = indicator.Id })" 
+                                                   class="btn btn-outline-secondary btn-sm" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                        data-bs-toggle="modal" data-bs-target="#deleteModal-@indicator.Id" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-speedometer2" style="font-size: 4rem; color: #ccc;"></i>
+            <h4 class="mt-3 text-muted">No indicators found</h4>
+            <p class="text-muted">
+                @if (Model.FrameworkId.HasValue || !string.IsNullOrEmpty(Model.Search))
+                {
+                    <text>No indicators match your current filters. Try adjusting your search criteria.</text>
+                }
+                else
+                {
+                    <text>No indicators have been created yet. Start by creating frameworks and elements.</text>
+                }
+            </p>
+            <a href="@Url.Page("/Frameworks/Index")" class="btn btn-primary mt-3">
+                <i class="bi bi-diagram-3"></i> View Frameworks
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modals -->
+@foreach (var indicator in Model.Indicators)
+{
+    <div class="modal fade" id="deleteModal-@indicator.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete Indicator
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">
+                        Are you sure you want to delete indicator <strong>"@indicator.Name"</strong>?
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone and will:
+                        <ul class="mb-0 mt-2">
+                            <li>Delete @indicator.MeasurementsCount measurement record(s)</li>
+                            <li>Remove all associated historical data</li>
+                            <li>Break monitoring continuity</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@indicator.Id">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>Yes, Delete Indicator
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables if there are indicators
+            @if (Model.Indicators.Any())
+            {
+                <text>
+                $('.table').DataTable({
+                    pageLength: 25,
+                    order: [[1, 'asc'], [0, 'asc']],
+                    columnDefs: [
+                        { orderable: false, targets: -1 }
+                    ]
+                });
+                </text>
+            }
+        });
+    </script>
+}

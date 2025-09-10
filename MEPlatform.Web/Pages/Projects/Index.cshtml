@@ -1,0 +1,308 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Projects.IndexModel
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3"><i class="bi bi-kanban me-2"></i>Projects</h1>
+            <p class="text-muted mb-0">Manage and monitor all development projects</p>
+        </div>
+        <div>
+            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+            {
+                <a href="@Url.Page("./Create")" class="btn btn-primary">
+                    <i class="bi bi-plus"></i> Create Project
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-funnel me-2"></i>Filters</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Status</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="Planning">Planning</option>
+                        <option value="Active">Active</option>
+                        <option value="On Hold">On Hold</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="region" class="form-label">Region</label>
+                    <select asp-for="Region" class="form-select">
+                        <option value="">All Regions</option>
+                        <option value="Damascus">Damascus</option>
+                        <option value="Aleppo">Aleppo</option>
+                        <option value="Homs">Homs</option>
+                        <option value="Daraa">Daraa</option>
+                        <option value="Latakia">Latakia</option>
+                        <option value="Hama">Hama</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="sector" class="form-label">Sector</label>
+                    <select asp-for="Sector" class="form-select">
+                        <option value="">All Sectors</option>
+                        <option value="Health">Health</option>
+                        <option value="Education">Education</option>
+                        <option value="Agriculture">Agriculture</option>
+                        <option value="Water & Sanitation">Water & Sanitation</option>
+                        <option value="Economic Development">Economic Development</option>
+                        <option value="Social Infrastructure">Social Infrastructure</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="framework" class="form-label">Framework</label>
+                    <select asp-for="Framework" class="form-select">
+                        <option value="">All Frameworks</option>
+                        <option value="SNDV Framework">SNDV Framework</option>
+                        <option value="Programs Framework">Programs Framework</option>
+                        <option value="SDG Framework">SDG Framework</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="programId" class="form-label">Program</label>
+                    <select asp-for="ProgramId" class="form-select">
+                        <option value="">All Programs</option>
+                        <option value="1">Syria Recovery Initiative</option>
+                        <option value="2">Community Resilience Program</option>
+                        <option value="3">Agricultural Revival Project</option>
+                        <option value="4">Youth Empowerment Initiative</option>
+                        <option value="6">Women's Economic Empowerment</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">Filter</button>
+                    <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Projects Grid -->
+    @if (Model.Projects.Any())
+    {
+        <div class="row">
+            @foreach (var project in Model.Projects)
+            {
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">@project.Name</h6>
+                            <span class="badge @GetStatusBadgeClass(project.Status)">
+                                @project.Status
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small mb-3">@project.Description</p>
+                            
+                            <!-- Project Info -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="small text-muted">Region</div>
+                                    <div class="fw-bold">@project.Region</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small text-muted">Sector</div>
+                                    <div class="fw-bold">@project.Sector</div>
+                                </div>
+                            </div>
+
+                            <!-- Progress -->
+                            @if (project.Progress > 0)
+                            {
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Progress</span>
+                                        <span class="fw-bold">@project.Progress.ToString("F1")%</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar @GetProgressBarClass(project.Progress)" 
+                                             style="width: @project.Progress%"></div>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Performance Metrics -->
+                            <div class="mb-3">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="fw-bold text-primary">@project.FinancialPerformance.ToString("F1")%</div>
+                                        <div class="small text-muted">Financial</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold text-success">@project.PhysicalPerformance.ToString("F1")%</div>
+                                        <div class="small text-muted">Physical</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold @(project.Trend >= 0 ? "text-success" : "text-danger")">
+                                            @(project.Trend >= 0 ? "+" : "")@project.Trend.ToString("F1")%
+                                        </div>
+                                        <div class="small text-muted">Trend</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Framework & Program -->
+                            <div class="mb-3">
+                                <span class="badge bg-primary me-1">@project.Framework</span>
+                                @if (!string.IsNullOrEmpty(project.ProgramName))
+                                {
+                                    <span class="badge bg-success">@project.ProgramName</span>
+                                }
+                            </div>
+
+                            <!-- Additional Info -->
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span><i class="bi bi-person me-1"></i>@project.Manager</span>
+                                <span><i class="bi bi-speedometer2 me-1"></i>@project.IndicatorsCount indicators</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center small text-muted mt-1">
+                                <span><i class="bi bi-calendar3 me-1"></i>@project.StartDate.ToString("MMM yyyy")</span>
+                                @if (project.Budget.HasValue)
+                                {
+                                    <span><i class="bi bi-cash me-1"></i>$@project.Budget.Value.ToString("N0")</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex gap-2">
+                                <a href="@Url.Page("./Details", new { id = project.Id })" 
+                                   class="btn btn-outline-primary btn-sm flex-fill">
+                                    <i class="bi bi-eye me-1"></i>Details
+                                </a>
+                                @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                                {
+                                    <div class="btn-group">
+                                        <a href="@Url.Page("./Edit", new { id = project.Id })" 
+                                           class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                data-bs-toggle="modal" data-bs-target="#deleteModal-@project.Id">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-kanban" style="font-size: 4rem; color: #ccc;"></i>
+            <h4 class="mt-3 text-muted">No projects found</h4>
+            <p class="text-muted">
+                @if (!string.IsNullOrEmpty(Model.Status) || !string.IsNullOrEmpty(Model.Region) || !string.IsNullOrEmpty(Model.Sector))
+                {
+                    <text>No projects match your current filters. Try adjusting your search criteria.</text>
+                }
+                else
+                {
+                    <text>Get started by creating your first project.</text>
+                }
+            </p>
+            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+            {
+                <a href="@Url.Page("./Create")" class="btn btn-primary mt-3">
+                    <i class="bi bi-plus"></i> Create Your First Project
+                </a>
+            }
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modals -->
+@foreach (var project in Model.Projects)
+{
+    <div class="modal fade" id="deleteModal-@project.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete Project
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">
+                        Are you sure you want to delete project <strong>"@project.Name"</strong>?
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone and will:
+                        <ul class="mb-0 mt-2">
+                            <li>Remove all @project.IndicatorsCount indicator(s)</li>
+                            <li>Delete @project.MeasurementsCount measurement record(s)</li>
+                            <li>Remove framework alignment data</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@project.Id">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>Yes, Delete Project
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@functions {
+    string GetStatusBadgeClass(string status) => status switch
+    {
+        "Active" => "bg-success",
+        "Planning" => "bg-primary",
+        "On Hold" => "bg-warning",
+        "Completed" => "bg-info",
+        "Cancelled" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    string GetProgressBarClass(decimal progress) => progress switch
+    {
+        >= 90 => "bg-success",
+        >= 70 => "bg-info",
+        >= 50 => "bg-warning",
+        _ => "bg-danger"
+    };
+}

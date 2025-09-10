@@ -1,0 +1,302 @@
+@page "{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model MEPlatform.Web.Pages.Programs.EditModel
+@{
+    ViewData["Title"] = $"Edit Program - {Model.Program.Name}";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="@Url.Page("/Dashboard/Index")">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Page("./Index")">Programs</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-pencil me-2"></i>Edit Program
+            </h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Page("./Details", new { id = Model.Program.Id })" class="btn btn-outline-info">
+                <i class="bi bi-eye me-1"></i>View Details
+            </a>
+            <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Programs
+            </a>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Main Edit Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Program Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <input type="hidden" asp-for="Program.Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Program.Name" class="form-label">Program Name <span class="text-danger">*</span></label>
+                                <input asp-for="Program.Name" class="form-control">
+                                <span asp-validation-for="Program.Name" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Program.Status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select asp-for="Program.Status" class="form-select">
+                                    @foreach (var status in Model.AvailableStatuses)
+                                    {
+                                        <option value="@status">@status</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Program.Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Program.Manager" class="form-label">Program Manager</label>
+                                <input asp-for="Program.Manager" class="form-control">
+                                <span asp-validation-for="Program.Manager" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Program.Donor" class="form-label">Donor/Funding Organization</label>
+                                <input asp-for="Program.Donor" class="form-control">
+                                <span asp-validation-for="Program.Donor" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Program.Description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea asp-for="Program.Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Program.Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- Dates and Budget -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Program.StartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                <input asp-for="Program.StartDate" class="form-control" type="date">
+                                <span asp-validation-for="Program.StartDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Program.EndDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                                <input asp-for="Program.EndDate" class="form-control" type="date">
+                                <span asp-validation-for="Program.EndDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Program.Budget" class="form-label">Budget (USD)</label>
+                                <input asp-for="Program.Budget" class="form-control" type="number" step="0.01" min="0">
+                                <span asp-validation-for="Program.Budget" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Sectors Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Target Sectors</label>
+                            <div class="row">
+                                @for (int i = 0; i < Model.AvailableSectors.Count; i++)
+                                {
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="Program.SelectedSectors" value="@Model.AvailableSectors[i]" 
+                                                   id="sector-@i" @(Model.Program.SelectedSectors.Contains(Model.AvailableSectors[i]) ? "checked" : "")>
+                                            <label class="form-check-label" for="sector-@i">
+                                                @Model.AvailableSectors[i]
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Regions Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Target Regions</label>
+                            <div class="row">
+                                @for (int i = 0; i < Model.AvailableRegions.Count; i++)
+                                {
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="Program.SelectedRegions" value="@Model.AvailableRegions[i]" 
+                                                   id="region-@i" @(Model.Program.SelectedRegions.Contains(Model.AvailableRegions[i]) ? "checked" : "")>
+                                            <label class="form-check-label" for="region-@i">
+                                                @Model.AvailableRegions[i]
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i>Save Changes
+                            </button>
+                            <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                            @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Supervisor"))
+                            {
+                                <button type="button" class="btn btn-outline-danger ms-auto" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    <i class="bi bi-trash me-1"></i>Delete Program
+                                </button>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Panel -->
+        <div class="col-lg-4">
+            <!-- Program Stats -->
+            <div class="card bg-light mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Program Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h5 class="text-primary mb-0">@Model.Program.ProjectsCount</h5>
+                            <small class="text-muted">Projects</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-success mb-0">@Model.Program.CompletedProjects</h5>
+                            <small class="text-muted">Completed</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-info mb-0">@Model.Program.ActiveProjects</h5>
+                            <small class="text-muted">Active</small>
+                        </div>
+                    </div>
+                    
+                    @if (Model.Program.OverallProgress.HasValue)
+                    {
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small>Overall Progress</small>
+                                <small class="fw-bold">@Model.Program.OverallProgress.Value.ToString("F1")%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar @(Model.Program.OverallProgress.Value >= 75 ? "bg-success" : Model.Program.OverallProgress.Value >= 50 ? "bg-warning" : "bg-danger")" 
+                                     style="width: @Model.Program.OverallProgress.Value%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Performance Metrics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="fw-bold text-primary">@Model.Program.FinancialPerformance.ToString("F1")%</div>
+                            <div class="small text-muted">Financial</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="fw-bold text-success">@Model.Program.PhysicalPerformance.ToString("F1")%</div>
+                            <div class="small text-muted">Physical</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="fw-bold text-info">@Model.Program.Performance.ToString("F1")%</div>
+                            <div class="small text-muted">Overall</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="fw-bold @(Model.Program.Trend >= 0 ? "text-success" : "text-danger")">
+                                @(Model.Program.Trend >= 0 ? "+" : "")@Model.Program.Trend.ToString("F1")%
+                            </div>
+                            <div class="small text-muted">Trend</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Program Details</h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">Created: @Model.Program.CreatedAt.ToString("MMM dd, yyyy")</small><br>
+                    @if (Model.Program.Budget.HasValue)
+                    {
+                        <small class="text-muted">Budget: $@Model.Program.Budget.Value.ToString("N0")</small><br>
+                    }
+                    <small class="text-muted">Duration: @((Model.Program.EndDate - Model.Program.StartDate).Days) days</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-danger">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Delete Program
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">
+                    Are you sure you want to delete the program <strong>"@Model.Program.Name"</strong>?
+                </p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone and will:
+                    <ul class="mb-0 mt-2">
+                        <li>Remove @Model.Program.ProjectsCount project(s) from this program</li>
+                        <li>Delete all associated monitoring data</li>
+                        <li>Remove performance tracking history</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form method="post" asp-page-handler="Delete" asp-route-id="@Model.Program.Id">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Yes, Delete Program
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
